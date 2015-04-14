@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/css" href="chrome://global/skin"?>
+<!DOCTYPE xul:window [
+	<!ENTITY rdf 'http://www.w3.org/1999/02/22-rdf-syntax-ns#'>
+	<!ENTITY sample  "http://www.sampleurl.org/rdfs/sample#">
+]>
+<xul:window
+	xmlns = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+	xmlns:xul    = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+	xmlns:sample = "&sample;"
+        xmlns:html="http://www.w3.org/1999/xhtml"  
+	xmlns:rdf    = "&rdf;">
+        <xul:script language="javascript1.5" src="XULInterface.js"/> 
+        <xul:script language="javascript1.5" src="interface.js"/>
+	<xul:script language="javascript1.5" src="var.js"/>
+        <xul:script language="javascript1.5" src="RDFUnify.js"/>
+        <xul:script language="javascript1.5" src="RDFEngine.js"/>
+        <xul:script language="javascript1.5" src="Jsengine.js"/>
+        <xul:script language="javascript1.5" src="gedcom-simple.js"/>
+        <xul:script language="javascript1.5" src="Utils.js"/>
+        <xul:script language="javascript1.5" src="Builtins.js"/>
+        <xul:script language="javascript1.5" src="Forward.js"/> 
+        <xul:script language="javascript1.5" src="N3EParser.js"/>        
+	<xul:script language="javascript1.5" src="Utils.js"/>
+  <xul:script language="javascript1.5">
+		<![CDATA[
+/** Test module for dynamic XUL inferencing interface
+  * Author: Guido J.M. Naudts Bouwel
+  */
+
+var mainFlag = 0;
+var initFlag = 0;
+
+// functions of object XULInterface.js:
+//    this.addFileByNameForInf = function(name, type, filename)
+//    this.addFileByArrayForInf = function(name, type, array)
+//    this.makeInfDB = function(dbName, setList)
+//    this.queryInfDB = function(dbName, queryName, inferenceType)
+
+function execTestcase(){
+    var xint;
+    var myUrlDoc;
+    if (initFlag == 0){
+       initFlag == 1;
+       xint = new XULInterface();
+       var myUrl = document.location.href;
+       var li = myUrl.lastIndexOf("/");
+       myUrlDoc = myUrl.substring(8, li+1);
+       myUrlDoc = replaceChars(myUrlDoc, '/', '\\');
+       myUrlDoc = myUrlDoc + "testcases\\";
+       xint.addFileByNameForInf("axioms", "a", myUrlDoc + "frameTest.axioms.n3");
+    } 
+    var queryN3 =
+       "# frame test query\n" +
+       "@prefix log: <http://www.w3.org/2000/10/swap/log#>.\n" +
+       "@prefix : <window#>.\n" +
+       ":frame1 :newcolor ?c1.\n" +
+       ":frame2 :newcolor ?c2.\n" +
+       ":frame3 :newcolor ?c3.\n" +
+       ":frame4 :newcolor ?c4.\n";
+    var c1, c2, c3, c4;
+    var dataN3;
+    var solution, sol, t, sub, obj;
+    var framenr, color, color1;
+    var c;
+    while (mainFlag == 0){
+       // get the colors
+       //setTimeout("doNothing()", 500);
+       c1 = getColor(1);
+       c2 = getColor(2);
+       c3 = getColor(3);
+       c4 = getColor(4);
+       dataN3 =
+          "# frame test data\n" +
+          "@prefix log: <http://www.w3.org/2000/10/swap/log#>.\n" +
+          "@prefix : <window#>.\n" +
+          ":frame1 :color \"" + c1 +"\".\n" +
+          ":frame2 :color \"" + c2 +"\".\n" +
+          ":frame3 :color \"" + c3 +"\".\n" +
+          ":frame4 :color \"" + c4 +"\".\n";
+       xint.addFileByStringForInf("data", "d", dataN3);
+       xint.addFileByStringForInf("query", "q", queryN3);
+       xint.makeInfDB("myDB", ["axioms", "data"]);
+       solution = xint.queryInfDB("myDB", "query", "backward");
+       sol = solution[0];
+       for (var i = 0; i < sol.length; i++){
+          t = sol[i];
+          print("t = " + t + "\n"); 
+          if (t.getProperty() == "window#newcolor"){
+             framenr = t.getSubject().uri;
+             color = t.getObject().uri;
+             if (framenr == "window#frame1")
+                 framenr = 1;
+             if (framenr == "window#frame2")
+                 framenr = 2;
+             if (framenr == "window#frame3")
+                 framenr = 3;
+             if (framenr == "window#frame4")
+                 framenr = 4;
+             if (color == "random")
+                 color = "red";
+             color1 = "nocolor";
+             while (color != color1){
+                 setColor(framenr, color);
+                 color1 = getColor(framenr);
+             }
+          }
+       }
+     }
+     mainflag = 0;
+}
+
+function stopTestcase(){
+   mainFlag = 1;
+}
+
+function doNothing(){
+   var a = 1;
+}
+
+function getColor(framenr){
+    var s;
+    if (framenr == 1)
+        s = "frame1";
+    else if (framenr == 2)
+        s = "frame2";
+    else if (framenr == 3)
+        s = "frame3";
+    else
+        s = "frame4";
+    var frame = document.getElementById(s);
+    return frame.style.backgroundColor;
+}
+
+function setColor(framenr, color){
+    var frame; 
+    if (framenr == 1){
+       frame = document.getElementById("frame1");       
+    }else if (framenr == 2){
+       frame = document.getElementById("frame2");       
+    }else if (framenr == 3){
+       frame = document.getElementById("frame3");       
+    }else{
+       frame = document.getElementById("frame4");       
+    }
+    frame.style.backgroundColor = color;
+}
+ ]]>
+  </xul:script>
+ <xul:vbox flex="1">
+   <xul:spacer flex="2"/>
+   <xul:button label="start" style="color: blue;" oncommand="execTestcase()"/>
+   <xul:button label="stop" style="color: red;" oncommand="stopTestcase()"/>
+   <xul:spacer flex="2"/>
+   <xul:hbox>
+     <xul:spacer flex="1"/>
+     <xul:iframe id="frame1" style="background-color: red;"/>
+     <xul:spacer flex="1"/>
+     <xul:iframe id="frame2" style="background-color: blue;"/>
+     <xul:spacer flex="1"/>
+   </xul:hbox>
+   <xul:spacer flex="2"/>
+   <xul:hbox>
+     <xul:spacer flex="1"/>
+     <xul:iframe id="frame3" style="background-color: yellow;"/>
+     <xul:spacer flex="1"/>
+     <xul:iframe id="frame4" style="background-color: green;"/>
+     <xul:spacer flex="1"/>
+   </xul:hbox>
+   <xul:spacer flex="2"/>
+   <xul:textbox multiline="true" value="" id="resultsText" flex="1.0"/>
+ </xul:vbox>
+</xul:window>

@@ -1,0 +1,9 @@
+# frame test data
+
+@prefix log: <http://www.w3.org/2000/10/swap/log#>.
+@prefix : <window#>.
+
+:frame1 :color "red".
+:frame2 :color "blue".
+:frame3 :color "green".
+:frame4 :color "yellow".

@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/css" href="chrome://global/skin"?>
+<!DOCTYPE xul:window [
+	<!ENTITY rdf 'http://www.w3.org/1999/02/22-rdf-syntax-ns#'>
+	<!ENTITY sample  "http://www.sampleurl.org/rdfs/sample#">
+]>
+<xul:window onclose="closeAll"
+	xmlns = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+	xmlns:xul    = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+	xmlns:sample = "&sample;"
+        xmlns:html="http://www.w3.org/1999/xhtml"  
+	xmlns:rdf    = "&rdf;">
+
+        <xul:script language="javascript1.7" src="var.js"/>
+        <xul:script language="javascript1.7" src="RDFUnify.js"/>
+        <xul:script language="javascript1.7" src="RDFEngine.js"/>
+        <xul:script language="javascript1.7" src="Jsengine.js"/>
+        <xul:script language="javascript1.7" src="Forward.js"/>
+        <xul:script language="javascript1.7" src="ForwardCS.js"/>
+        <xul:script language="javascript1.7" src="Parameter.js"/>
+        <xul:script language="javascript1.7" src="MRUArray.js"/>
+        <xul:script language="javascript1.7" src="XML2n3.js"/>
+        <xul:script language="javascript1.7" src="interface.js"/>
+        <xul:script language="javascript1.7" src="WebService.js"/>
+        <xul:script language="javascript1.7" src="Utils.js"/>
+        <xul:script language="javascript1.7" src="XULInterface.js"/>
+        <xul:script language="javascript1.7" src="N3EParser.js"/>
+        <xul:script language="javascript1.7" src="Builtins.js"/>
+        <xul:script language="javascript1.7" src="client/WSclient.js"/>
+        <xul:script language="javascript1.7" src="server/WSserver.js"/>
+        <xul:script language="javascript1.7" src="server/ThreadManager.js"/>
+        <xul:script language="javascript1.7" src="WebService.js"/>
+        <xul:script language="javascript1.7" src="client/WSclientO.js"/>
+        <xul:script language="javascript1.7" src="client/TestClient.js"/>
+        <xul:script language="javascript1.7" src="client/SoapClient.js"/>
+
+        <xul:script language="javascript1.7" src="WebServiceCS.js"/>
+        <xul:script language="javascript1.7" src="server/WSserverCS.js"/>
+
+        <xul:script language="javascript1.7">
+<![CDATA[
+/** Test module
+  * Author: Guido J.M. Naudts Bouwel
+  */
+var application = window;
+// This var is a referrer to window object where scripts are loaded.
+// It offers an easy way to access the api wherever you are,
+// iframe or a child window. In case you need an iframe, this code
+// needs to be added to the xul in the iframe:
+//       var application = parent.application
+// In case you need a window, this code needs to be added:
+//  var application = opener.application
+
+var wsClient;
+var wsServer;
+var wsServerCS;
+
+
+function startServer(){
+    wsServer = new WSserver();
+    wsServer.port = 10120;
+    wsServer.start();
+
+}
+
+function startServerCS(){
+    wsServerCS = new WSserverCS();
+    wsServerCS.port = 10200;
+    wsServerCS.start();
+
+
+}
+
+function startClient(){
+        //wsClientO = new WSclientO();
+        //wsClient = new WSclient();
+         soapClient = new SoapClient();
+         soapClient.send();
+        //wsClientO.test1("localhost", 10120);
+
+        //wsClient.test("http://127.0.0.1:10120");
+
+
+}
+
+function startClientCS(){
+    writeln("Start time: " +  myClock());
+    //for (i=0; i < 10; i++){
+
+        wsClientO = new WSclientO();
+        //tclient = new TestClient();
+        wsClientO.testPow();
+        //wsClient0.test();
+        //tclient.test1("localhost", 10200);
+    //}
+}
+
+function startClientGet(){
+    wsClient = new WSclient();
+    //wsClient.test("http://192.32.2.105:10120");
+    wsClient.testWithGet("http://localhost:10120");
+}
+
+
+function testInternet(){
+    wsClient = new WSclient();
+    wsClient.testXmlHttpRequest();
+}
+
+function closeAll(){
+    wsServer.stop();
+    wsServerCS.stop();
+}
+
+function closeAllCS(){
+    wsServerCS.stop();
+}
+
+
+
+function writeln(text){
+       document.getElementById('resultsText').value =
+           document.getElementById('resultsText').value + text + "\n";
+
+}
+
+function writeMessage(text){
+       document.getElementById('resultsText').value =
+           document.getElementById('resultsText').value + text + "\n";
+
+}
+
+
+ ]]>
+  </xul:script>
+ <xul:vbox flex="1">
+   <xul:hbox>
+      <xul:button label="Start server" style="color: blue;" oncommand="startServer()"/>
+      <xul:button label="Start serverCS" style="color: blue;" oncommand="startServerCS()"/>
+      <xul:button label="CLOSE" style="color: blue;" oncommand="closeAll()"/>
+      <xul:button label="CLOSECS" style="color: blue;" oncommand="closeAllCS()"/>
+   </xul:hbox>
+   <xul:hbox>
+      <xul:button label="Start client" style="color: blue;" oncommand="startClient()"/>
+      <xul:button label="Start clientCS" style="color: blue;" oncommand="startClientCS()"/>
+      <xul:button label="Start client with get" style="color: blue;" oncommand="startClientGet()"/>
+
+      <xul:button label="Test Internet" style="color: blue;" oncommand="testInternet()"/>
+   </xul:hbox>
+   <xul:textbox multiline="true" value="" id="resultsText" flex="1.0"/>
+ </xul:vbox>
+</xul:window>

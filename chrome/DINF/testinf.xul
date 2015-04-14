@@ -1,0 +1,340 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/css" href="chrome://global/skin"?>
+<!DOCTYPE xul:window [
+	<!ENTITY rdf 'http://www.w3.org/1999/02/22-rdf-syntax-ns#'>
+	<!ENTITY sample  "http://www.sampleurl.org/rdfs/sample#">
+]>
+<xul:window
+	xmlns = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+	xmlns:xul    = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+	xmlns:sample = "&sample;"
+        xmlns:html="http://www.w3.org/1999/xhtml"  
+	xmlns:rdf    = "&rdf;">
+        <xul:script language="javascript1.7" src="interface.js"/>
+	    <xul:script language="javascript1.7" src="var.js"/>
+        <xul:script language="javascript1.7" src="RDFUnify.js"/>
+        <xul:script language="javascript1.7" src="RDFEngine.js"/>
+        <xul:script language="javascript1.7" src="Jsengine.js"/>
+        <xul:script language="javascript1.7" src="gedcom-simple.js"/>
+        <xul:script language="javascript1.7" src="Utils.js"/>
+        <xul:script language="javascript1.7" src="Builtins.js"/>
+        <xul:script language="javascript1.7" src="Forward.js"/>
+        <xul:script language="javascript1.7" src="N3EParser.js"/>
+        <xul:script language="javascript1.7">
+
+		<![CDATA[
+/** Test module for inferencing engine
+  * Author: Guido J.M. Naudts Bouwel
+  */
+
+var application = window; 
+// This var is a referrer to window object where scripts are loaded. 
+// It offers an easy way to access the api wherever you are,
+// iframe or a child window. In case you need an iframe, this code
+// needs to be added to the xul in the iframe: 
+//       var application = parent.application
+// In case you need a window, this code needs to be added:
+//  var application = opener.application
+
+// a buffer for own testcases
+var fileBuffer = [];
+var filepath = "";
+
+
+			
+function doMain(){
+  var fileString;
+  netscape.security.PrivilegeManager.enablePrivilege("UniversalXPConnect");
+
+  var nsIFilePicker = Components.interfaces.nsIFilePicker;
+  var myFilePicker  = Components.classes["@mozilla.org/filepicker;1"].createInstance(nsIFilePicker);
+  myFilePicker.init(window,"Select a file",0);
+  myFilePicker.appendFilter("n3 files","*.n3");
+  var fileOk = myFilePicker.show();
+  var filename;
+  var i; 
+  if (fileOk == nsIFilePicker.returnOK) {
+     filename = myFilePicker.file.path;
+     i = filename.lastIndexOf("\\");
+     filepath = filename.substring(0, i+1);
+     filename = filename.substring(i+1, filename.length);
+     fileBuffer.push(filename);
+     print("File selected = " + filepath + filename + "\n");
+  } 
+}
+
+
+function execTestcase(){
+
+    var myUrl = document.location.href;
+    var li = myUrl.lastIndexOf("/");
+    var myUrlDoc = myUrl.substring(8, li+1);
+    myUrlDoc = replaceChars(myUrlDoc, '/', '\\');
+    myUrlDoc = myUrlDoc + "testcases\\";
+    print("url of document = " + myUrlDoc + "\n");
+    var myList = document.getElementById('testcases');
+    var selectedText = myList.selectedItem.label;
+    if (fileBuffer.length != 0)
+         myUrlDoc = filepath;
+    var inf = getInfFromSelection(myUrlDoc, selectedText);
+    print("Graphs: " + inf.graphsToString());
+    print("query " + inf.query + "\n");
+    toggleVerbose(inf);
+    inf.maxSteps = getMaxsteps();
+    inference(inf);
+    print("\n==========================================\n\n");
+    inf.reinit();
+    inf.maxSteps = getMaxsteps();
+    inf.onesol = getOnesol();
+    toggleVerbose(inf);
+    reason(inf);
+}
+
+function toggleVerbose(inf){
+    var toggle = document.getElementById('verbose');
+    var selectedText = toggle.selectedItem.label;
+    if (selectedText == "on")
+       inf.verbose = 1;
+    else
+       inf.verbose = 0;
+}
+
+function execForward(){
+
+    var myUrl = document.location.href;
+    var li = myUrl.lastIndexOf("/");
+    var myUrlDoc = myUrl.substring(8, li+1);
+    myUrlDoc = replaceChars(myUrlDoc, '/', '\\');
+    myUrlDoc = myUrlDoc + "testcases\\";
+    print("url of document = " + myUrlDoc + "\n");
+    var myList = document.getElementById('testcases');
+    var selectedText = myList.selectedItem.label;
+    if (fileBuffer.length != 0)
+         myUrlDoc = filepath;
+    var inf = getInfFromSelection(myUrlDoc, selectedText);
+    print("Graphs: " + inf.graphsToString());
+    print("query " + inf.query + "\n");
+    toggleVerbose(inf);
+    inf.maxSteps = getMaxsteps();
+    inf.onesol = getOnesol();
+    reason(inf);
+}
+
+function getInfFromSelection(myUrlDoc, selectedText){
+    var inf;
+    if (fileBuffer.length != 0){
+        inf = infData1(myUrlDoc, fileBuffer);
+    }
+    else{
+       if (selectedText == "authen")
+           inf = infData1(myUrlDoc, ["authen.axiom.n3", "authen.lemma.n3"]);
+       if (selectedText == "frames")
+           inf = infData1(myUrlDoc, ["frameTest.data.n3", "frameTest.axioms.n3",
+                                           "frameTest.query.n3"]);
+       if (selectedText == "gedcomSimple")
+           inf = infData1(myUrlDoc, ["gedcom-simple.n3", "gedcom-relations.n3",
+                                           "gedcom-qsimple.n3"]);
+       if (selectedText == "ontology")
+           inf = infData1(myUrlDoc, ["ontology.axiom.n3", "ontology.query.n3"]);
+       if (selectedText == "booleW")
+           inf = infData1(myUrlDoc, ["booleW.a.n3", "booleW.q.n3"]);
+       if (selectedText == "proctest")
+           inf = infData1(myUrlDoc, ["proctest.axioms.n3", "proctest.query.n3"]);
+       if (selectedText == "proctest2")
+           inf = infData1(myUrlDoc, ["proctest2.axioms.n3", "proctest2.query.n3"]);
+       if (selectedText == "proctest3")
+           inf = infData1(myUrlDoc, ["proctest3.axioms.n3", "proctest3.query.n3"]);
+       if (selectedText == "logsemantics")
+           inf = infData1(myUrlDoc, ["logsemantics.a.n3", "logsemantics.q.n3"]);
+       if (selectedText == "builtintest")
+           inf = infData1(myUrlDoc, ["builtintest.a.n3", "builtintest.q.n3"]);
+
+    }
+    return inf;
+}
+
+function execBackward(){
+    var myUrl = document.location.href;
+    var li = myUrl.lastIndexOf("/");
+    var myUrlDoc = myUrl.substring(8, li+1);
+    myUrlDoc = replaceChars(myUrlDoc, '/', '\\');
+    myUrlDoc = myUrlDoc + "testcases\\";
+    print("url of document = " + myUrlDoc + "\n");
+    var myList = document.getElementById('testcases');
+    var selectedText = myList.selectedItem.label;
+    if (fileBuffer.length != 0)
+         myUrlDoc = filepath;
+    var inf = getInfFromSelection(myUrlDoc, selectedText);
+    print("Graphs: " + inf.graphsToString());
+    print("query " + inf.query + "\n");
+    inf.maxSteps = getMaxsteps();
+    inf.onesol = getOnesol();
+    toggleVerbose(inf);
+    inference(inf);
+}
+
+function getOnesol(){
+   var elL = document.getElementById('onesol');
+   var el = elL.selectedItem.label;
+   if (el == "all solutions")
+      return 0;
+   else
+      return 1;
+}
+
+function getMaxsteps(){
+   var stepsL = document.getElementById('inflimit');
+   var steps = stepsL.selectedItem.label;
+
+   if (steps == "20")
+      return 20;
+   if (steps == "50")
+      return 50;
+   if (steps == "100")
+      return 100;
+   if (steps == "200")
+      return 200;
+   if (steps == "500")
+      return 500;
+   if (steps == "nolimit")
+      return -1;
+}
+
+function doFlush(){
+   fileBuffer = [];
+}
+
+function clearTextarea(){
+   document.getElementById("resultsText").value = "";
+}
+
+function test(){
+
+//execTestcase();
+//objectsToRDF(ts);
+//testParser();
+//testParseAnonSet();
+//testParseTriple();
+//testParseTripleSet();
+//testParseNodeList();
+//testParseComment();
+//testParsePrefix();
+
+// example 1
+var triple1 = new triple("?a", "b", "?c");
+var triple2 = new triple("?c", "b", "?a");
+var triple3 = new triple("d", "b", "e");
+var triple4 = new triple("e", "b", "d"); // query
+var rule1 = new rule([triple1], [triple2]);
+var ds = [new db([rule1, triple3]),new db([triple4])];
+// example 2
+var triple5 = new triple("a", "b", "c");
+var triple6 = new triple("c", "b", "d");
+var triple7 = new triple("d", "b", "e");
+var triple8 = new triple("e", "b", "a");
+var triple10 = new triple("?a", "b", "?c");
+var triple11 = new triple("?c", "b", "?d");
+var triple12 = new triple("?a", "b", "?d");
+var rule2 = new rule([triple10, triple11], [triple12]);
+var triple9 = new triple("?x", "b", "?y"); // looping query
+var ds1 = [new db([triple5, triple6, triple7, triple8, rule2])
+                ,new db([triple9])];
+// var inf = new infData(ds1);
+//var inf = new infData(ds2);
+//var inf = new infData(ds3);
+var inf = new infData(ds);
+inf.initinf();
+print("Graphs: " + inf.graphsToString());
+print("query " + inf.query + "\n");
+//inference(inf);
+//reason(inf);
+}
+
+function writeln(text){
+       document.getElementById('resultsText').value =
+           document.getElementById('resultsText').value + text + "\n";
+       
+}
+
+		]]>
+</xul:script>
+  <xul:vbox flex="1">
+     <xul:hbox flex="1">
+        <xul:groupbox flex="1">
+           <xul:caption label="Mozilla inference engine"/>
+	      <xul:grid flex="1">
+	         <xul:columns>
+		     <xul:column flex="1"/>
+                     <xul:column flex="1"/>
+                 </xul:columns>
+		 <xul:rows>
+                    <xul:row>
+				<xul:label value="Messages" style="font-weight:bold;color:#0066CC;"/>
+				<xul:label value="Testcases" style="font-weight:bold;color:#0066CC;" id="state"/>
+		    </xul:row>
+		     <xul:row>
+			<!--	<xul:button label="load file to parse"   oncommand="doMain()"/> -->
+                     </xul:row>
+                     <xul:row flex="1">
+				<xul:textbox multiline="true" value="" id="resultsText" flex="1.0"/>
+			<!--	<xul:button label="" oncommand=""/> -->
+                                <xul:vbox flex="2.0">
+                                    <xul:menulist id="testcases">
+                                       <xul:menupopup>
+                                          <xul:menuitem label="authen"/>
+                                          <xul:menuitem label="gedcomSimple"/>
+                                          <xul:menuitem label="frames"/>
+                                          <xul:menuitem label="ontology"/>
+                                          <xul:menuitem label="booleW"/>
+                                          <xul:menuitem label="proctest2"/>
+                                          <xul:menuitem label="proctest"/>
+                                          <xul:menuitem label="proctest3"/>
+                                          <xul:menuitem label="logsemantics" />
+                                          <xul:menuitem label="builtintest" selected='true'/>
+                                       </xul:menupopup>
+                                    </xul:menulist>
+
+                                    <xul:button label="execute testcase" oncommand="execTestcase()"/>
+                                    <xul:button label="forward only" oncommand="execForward()"/>
+                                    <xul:button label="backward only" oncommand="execBackward()"/>
+                            <!--        <xul:button label="testcase RDFParser" oncommand="execTestcase1()"/> -->
+                                    <xul:label value="verbose on/off"/>
+                                    <xul:menulist id="verbose">
+                                       <xul:menupopup>
+                                          <xul:menuitem label="off" selected = 'true'/>
+                                          <xul:menuitem label="on" />
+                                      </xul:menupopup>
+                                    </xul:menulist>
+                                    <xul:button label="load file to test"   oncommand="doMain()"/>
+                                    <xul:button label="flush buffer"   oncommand="doFlush()"/>
+                                    <xul:button label="clear textarea"   oncommand="clearTextarea()"/>
+                                    <xul:label value="inferencing limit"/>
+                                    <xul:menulist id="inflimit">
+                                       <xul:menupopup>
+                                          <xul:menuitem label="20"/>
+                                          <xul:menuitem label="50"/>
+                                          <xul:menuitem label="100"/>
+                                          <xul:menuitem label="200"/>
+                                          <xul:menuitem label="500" selected='true'/>
+                                          <xul:menuitem label="nolimit"/>
+                                       </xul:menupopup>
+                                    </xul:menulist>
+                                    <xul:label value="one solution"/>
+                                    <xul:menulist id="onesol">
+                                       <xul:menupopup>
+                                          <xul:menuitem label="all solutions" selected = 'true'/>
+                                          <xul:menuitem label="one solution" />
+                                      </xul:menupopup>
+                                    </xul:menulist>
+
+                               </xul:vbox> 
+                       </xul:row>
+        	</xul:rows>
+	    </xul:grid>
+	</xul:groupbox>
+     </xul:hbox>
+   </xul:vbox>
+       <xul:hbox> 
+            <html:a href="explic.html">Explanations</html:a> 
+        </xul:hbox>
+</xul:window>

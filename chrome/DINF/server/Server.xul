@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/css" href="chrome://global/skin"?>
+<!DOCTYPE xul:window [
+	<!ENTITY rdf 'http://www.w3.org/1999/02/22-rdf-syntax-ns#'>
+	<!ENTITY sample  "http://www.sampleurl.org/rdfs/sample#">
+]>
+<xul:window
+    onclose="stop()"
+    title="Xul Server"
+    xmlns = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+	xmlns:xul    = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+	xmlns:sample = "&sample;"
+    xmlns:html="http://www.w3.org/1999/xhtml"
+	xmlns:rdf    = "&rdf;">
+    <xul:script language="javascript1.7" src="ThreadManager.js"/>
+
+    <xul:script language="javascript1.7">
+		<![CDATA[
+
+		/*
+		 * client - server test. The client sends a message to the server. The server
+		 * accepts the messages and starts a long calculation that sends several
+		 * messages back to the client.
+		 * Threaded version.
+		 *
+         * Author: Guido J.M. Naudts Bouwel
+		 */
+
+    netscape.security.PrivilegeManager.enablePrivilege("UniversalXPConnect");
+
+
+var serverSocket;
+
+var threadManager;
+
+var port = 80;
+
+function start()
+{
+
+
+
+  var listener =
+  {
+
+    onSocketAccepted : function(socket, transport)
+    {
+      try {
+        netscape.security.PrivilegeManager.enablePrivilege("UniversalXPConnect");
+        writeln("On socket accepted");
+        // must start a client  now
+        var newClient = new client(transport);
+        //var threadID = threadManager.createThread(newClient);
+       /* if (threadID == 1){
+            threadManager.setPriority(1, "high");
+        }else{
+            threadManager.setPriority(threadID, "low");
+        }*/
+
+      } catch(ex2){
+          writeln("onSocketAccepted exception: " + ex2 + "\n");
+      }
+    },
+
+    onStopListening : function(socket, status){
+       socket.close();
+    }
+  };
+
+  try {
+    netscape.security.PrivilegeManager.enablePrivilege("UniversalXPConnect");
+    //threadManager = new ThreadManager();
+    serverSocket = Components.classes["@mozilla.org/network/server-socket;1"]
+                     .createInstance(Components.interfaces.nsIServerSocket);
+
+    serverSocket.init(7055,false,-1);
+    serverSocket.asyncListen(listener);
+    schedule();
+  } catch(ex){
+      writeln("start() exception: " + ex);
+  }
+
+
+  writeln("\nSERVER STARTED\n");
+};
+
+function schedule(){
+    if ( ! threadManager.stop )
+        threadManager.schedule();
+    setTimeout("schedule();", 10);
+}
+
+var client = function(  transport ){
+    netscape.security.PrivilegeManager.enablePrivilege("UniversalXPConnect");
+    this.threadID;
+    this.outstream = transport.openOutputStream(0,0,0);
+    this.ro = new readObject(transport);
+    this.result = 0;
+    this.counter = 0;
+    this.maxCount = 20;
+
+    this.ini = function(){
+       this.ro.init();
+        var data;
+        writeln("Thread " + this.threadID + " is ready to work.\n");
+        try {
+            data = this.ro.read();
+            writeln("Thread " + this.threadID + " recieved: " + data + "\n");
+        } catch(err) {
+             writeln("Client " + this.threadID + " ini() exception: " + err + "\n");
+        }
+
+    };
+
+    this.final = function(){
+        try{
+            var data;
+            this.outstream.write("EOT", 3);
+            data = this.ro.read();
+
+            writeln("Thread " + this.threadID + " recieved: " + data + "\n");
+         } catch(err) {
+             writeln("Client " + this.threadID + " final() exception: " + err + "\n");
+         }
+    }
+
+    this.next = function(){
+        try {
+           while(this.counter < this.maxCount){
+              this.counter++;
+              var s;
+              for (var i = 0; i<= 100000; i++) {
+                  this.result += i;
+
+              }
+              threadManager.sleep(1000);
+              // send the intermediary result
+              writeln("sending to: " + this.threadID);
+              s =  "Intermediary result: " + this.result + "EOM";
+              this.outstream.write(s, s.length );
+              yield false;
+           }
+           yield true;
+        } catch(err) {
+            writeln("Client " + this.threadID + " next() exception: " + err + "\n");
+        }
+     };
+
+  }
+
+
+function stop()
+{
+  netscape.security.PrivilegeManager.enablePrivilege("UniversalXPConnect");
+  if (serverSocket) serverSocket.close();
+  writeln("\nSERVER STOPPED\n");
+}
+
+
+
+function writeln(text){
+       document.getElementById('resultsText').value =
+           document.getElementById('resultsText').value + text + "\n";
+
+}
+
+var readObject = function(transport){
+   this.transport = transport;
+   this.stream;
+   this.instream;
+
+};
+
+readObject.prototype = {
+
+    init: function(){
+        try {
+            netscape.security.PrivilegeManager.enablePrivilege("UniversalXPConnect");
+
+            this.stream = this.transport.openInputStream(1,0,0);
+            this.instream = Components.classes["@mozilla.org/scriptableinputstream;1"]
+                .createInstance(Components.interfaces.nsIScriptableInputStream);
+            this.instream.init(this.stream);
+        } catch (ex){
+            writeln("readObject.init() exception: " + ex);
+        }
+
+    },
+    read: function(){
+        var data = "";
+        try{
+            while ( (data.indexOf("EOT") == -1) && (data.indexOf("EOM") == -1)){
+               data += this.instream.read(this.instream.available());
+            }
+        }catch(ex){
+            writeln("readObject.read() exception: " + ex + "\n");
+        }
+
+        return data;
+    },
+
+    close: function(){
+        try{
+           this.instream.close();
+        }catch(ex){
+           writeln("readObject.close() exception: " + ex + "\n");
+        }
+
+    }
+
+}
+
+function clear(){
+    document.getElementById('resultsText').value = "";
+}
+
+
+]]>
+</xul:script>
+
+<hbox>
+   <vbox>
+      <vbox>
+         <button label="Start" oncommand="start();"/>
+         <button label="Stop" oncommand="stop();"/>
+         <button label="Clear" oncommand="clear();"/>
+      </vbox>
+
+      <xul:textbox multiline="true" style="min-width: 300px;min-height: 300px;" value="" id="resultsText" flex="1.0"/>
+   </vbox>
+</hbox>
+</xul:window>

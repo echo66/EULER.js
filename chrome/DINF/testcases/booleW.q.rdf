@@ -1,0 +1,13 @@
+
+<!-- Processed by Id: cwm.py,v 1.82 2001/11/15 22:11:23 timbl Exp -->
+<!--     using base file:/Python22/cwm/booleW.q.n3-->
+
+
+<rdf:RDF xmlns="file:/Python22/cwm/boole#"
+    xmlns:log="http://www.w3.org/2000/10/swap/log#"
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+
+    <rdf:Description rdf:about="#a14">
+        <nand3 rdf:resource="V"/>
+    </rdf:Description>
+</rdf:RDF>

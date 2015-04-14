@@ -1,0 +1,9 @@
+
+@prefix log: <http://www.w3.org/2000/10/swap/log#>.
+@prefix : <boole#>.
+
+#:a14 :nand3 ?V.
+
+:sum :nand3 ?V.
+
+#:a15 :nand3 ?V.

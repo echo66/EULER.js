@@ -1,0 +1,73 @@
+Interface for a dynamic XUL Window based on N3 inferencing
+============================================================
+
+Author: Guido J.M. Naudts Bouwel
+
+All the following functions are defined for an object:
+object = new inferenceModule();
+e.g. object.addSetByFilenameForInf("tst", "d", "axioms.n3");
+
+addSetByFilename(name, type, filename):
+	name: name by which this set of triples is known in the program
+        type: the type of file:
+              "d" = data
+              "r" = rules
+              "a" = axioms (data + rules)
+              "q" = query
+        filename: the name of the N3 file
+    Return: null
+    Example: addSetByFilename("authen", "a", "authen.axiom.n3");
+
+addSetByStringArray(name, type, array):
+	name: name by which this set of triples is known in the program
+        type: the type of file:
+              "d" = data
+              "r" = rules
+              "a" = axioms (data + rules)
+              "q" = query
+        array: an array of strings in N3 format
+     Return: null 
+     Example: addSetByArray("query", "q",
+               ["@prefix : <authen#>", "?who :authenticated ?what."]);
+
+Note: executing addSetByFilename and addSetByStringArray
+      a second time with the same name will overwrite the
+      previous entered file.
+
+addSetByString(name, type, str):
+	    name: name by which this set of triples is known in the program
+          type: the type of file:
+              "d" = data
+              "r" = rules
+              "a" = axioms (data + rules)
+              "q" = query
+         str: an N3 file as string
+         Return: null
+         Example: addSetByString("query", "q",
+               "@prefix : <authen#>\n?who :authenticated ?what.");
+
+makeInfDB(dbName, fileList):
+         dbName: name of the db
+         fileList: list of names of N3 sets
+         Do not enter query sets here!!!!
+
+     Return: null
+     Example: makeInfDB("myDB", ["authen", "data"]);
+     Note: a default db is constituted by all entered files by the 
+           commands addFileByName and addFileByArray
+           with the exception of query files
+
+queryInfDB(dbName, queryName):
+         dbName: name of a db
+         queryName: name of a queryfile
+     Return: an array of arrays.
+            The second order arrays are arrays of strings
+            in N3 format; each string array represents a solution
+            i.e. the query with all variables substituted
+            by resources.  
+     Example: queryInfDB("myDB", "query");
+
+getDB(dbName):
+         dbName: name of a db
+ Return: a tripleset.
+ Example: getDB("authen");

@@ -1,0 +1,7 @@
+# business example Guido Naudts 03/2/2010
+
+
+@prefix : <http://test#>.
+
+?who :hasReduction ?x.
+

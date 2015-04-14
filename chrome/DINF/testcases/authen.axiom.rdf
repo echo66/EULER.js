@@ -1,0 +1,43 @@
+
+<!-- Processed by Id: cwm.py,v 1.82 2001/11/15 22:11:23 timbl Exp -->
+<!--     using base file:/Python22/cwm/authen.axiom.n3-->
+
+
+<rdf:RDF xmlns="file:/Python22/cwm/authen#"
+    xmlns:log="http://www.w3.org/2000/10/swap/log#"
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+
+    <rdf:Description>
+        <log:is rdf:parseType="log:Quote">
+            <rdf:Description>
+                <log:is rdf:parseType="log:Quote">
+                    <rdf:Description rdf:about="#institution">
+                        <subscribed rdf:resource="#mailinglist"/>
+                        <w3cmember rdf:resource="http://www.w3.org"/>
+                    </rdf:Description>
+                    <rdf:Description rdf:about="#person">
+                        <member rdf:resource="#institution"/>
+                    </rdf:Description>
+                </log:is>
+                <log:implies rdf:parseType="log:Quote">
+                    <rdf:Description rdf:about="#person">
+                        <authenticated rdf:resource="#mailinglist"/>
+                    </rdf:Description>
+                </log:implies>
+            </rdf:Description>
+        </log:is>
+        <rdf:type rdf:resource="http://www.w3.org/2000/10/swap/log#Truth"/>
+        <log:forAll rdf:resource="#institution"/>
+        <log:forAll rdf:resource="#mailinglist"/>
+        <log:forAll rdf:resource="#person"/>
+    </rdf:Description>
+
+    <rdf:Description rdf:about="http://www.agfa.com">
+        <subscribed rdf:resource="mailto:w3c-ac-forum@w3.org/"/>
+        <w3cmember rdf:resource="http://www.w3.org"/>
+    </rdf:Description>
+
+    <rdf:Description rdf:about="mailto:jos.deroo.jd@belgium.agfa.com">
+        <member rdf:resource="http://www.agfa.com"/>
+    </rdf:Description>
+</rdf:RDF>

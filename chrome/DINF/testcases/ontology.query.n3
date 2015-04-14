@@ -1,0 +1,11 @@
+# File ontology.query.n3
+
+
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
+@prefix : <ontology#>.
+@prefix log: <http://www.w3.org/2000/10/swap/log#>.
+
+
+_:who rdfs:subClassOf :vertebrae.
+
+

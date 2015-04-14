@@ -1,0 +1,205 @@
+
+<!-- Processed by Id: cwm.py,v 1.82 2001/11/15 22:11:23 timbl Exp -->
+<!--     using base file:/Python22/cwm/booleW.a.n3-->
+
+
+<rdf:RDF xmlns="file:/Python22/cwm/boole#"
+    xmlns:log="http://www.w3.org/2000/10/swap/log#"
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+
+    <rdf:Description rdf:about="#a">
+        <nand1>true</nand1>
+    </rdf:Description>
+
+    <rdf:Description rdf:about="#b">
+        <nand2>false</nand2>
+    </rdf:Description>
+
+    <rdf:Description rdf:about="#cin">
+        <nand2>true</nand2>
+    </rdf:Description>
+
+    <rdf:Description rdf:about="#g1">
+        <gnand1 rdf:resource="#a"/>
+        <gnand2 rdf:resource="#b"/>
+        <gnand3 rdf:resource="#a11"/>
+        <nandnand1 rdf:resource="#g3"/>
+        <nandnand2 rdf:resource="#g2"/>
+        <nandnand2 rdf:resource="#g9"/>
+    </rdf:Description>
+
+    <rdf:Description rdf:about="#g2">
+        <gnand1 rdf:resource="#a"/>
+        <gnand2 rdf:resource="#a11"/>
+        <gnand3 rdf:resource="#a12"/>
+        <nandnand1 rdf:resource="#g4"/>
+    </rdf:Description>
+
+    <rdf:Description rdf:about="#g3">
+        <gnand1 rdf:resource="#a11"/>
+        <gnand2 rdf:resource="#b"/>
+        <gnand3 rdf:resource="#a13"/>
+        <nandnand2 rdf:resource="#g4"/>
+    </rdf:Description>
+
+    <rdf:Description rdf:about="#g4">
+        <gnand1 rdf:resource="#a12"/>
+        <gnand2 rdf:resource="#a13"/>
+        <gnand3 rdf:resource="#a14"/>
+        <nandnand1 rdf:resource="#g5"/>
+        <nandnand1 rdf:resource="#g6"/>
+    </rdf:Description>
+
+    <rdf:Description rdf:about="#g5">
+        <gnand1 rdf:resource="#a14"/>
+        <gnand2 rdf:resource="#cin"/>
+        <gnand3 rdf:resource="#a15"/>
+        <nandnand1 rdf:resource="#g8"/>
+        <nandnand1 rdf:resource="#g9"/>
+        <nandnand2 rdf:resource="#g6"/>
+    </rdf:Description>
+
+    <rdf:Description rdf:about="#g6">
+        <gnand1 rdf:resource="#a14"/>
+        <gnand2 rdf:resource="#a15"/>
+        <gnand3 rdf:resource="#a16"/>
+        <nandnand1 rdf:resource="#g7"/>
+    </rdf:Description>
+
+    <rdf:Description rdf:about="#g7">
+        <gnand1 rdf:resource="#a16"/>
+        <gnand2 rdf:resource="#a17"/>
+        <gnand3 rdf:resource="#sum"/>
+    </rdf:Description>
+
+    <rdf:Description rdf:about="#g8">
+        <gnand1 rdf:resource="#a15"/>
+        <gnand2 rdf:resource="#cin"/>
+        <gnand3 rdf:resource="#a17"/>
+        <nandnand2 rdf:resource="#g7"/>
+    </rdf:Description>
+
+    <rdf:Description rdf:about="#g9">
+        <gnand1 rdf:resource="#a15"/>
+        <gnand2 rdf:resource="#a11"/>
+        <gnand3 rdf:resource="#cout"/>
+        <rdf:Description>
+            <log:is rdf:parseType="log:Quote">
+                <rdf:Description rdf:about="A">
+                    <nand1>false</nand1>
+                </rdf:Description>
+                <rdf:Description rdf:about="B">
+                    <nand2>false</nand2>
+                </rdf:Description>
+                <rdf:Description rdf:about="G">
+                    <gnand1 rdf:resource="A"/>
+                    <gnand2 rdf:resource="B"/>
+                    <gnand3 rdf:resource="C"/>
+                </rdf:Description>
+            </log:is>
+            <log:implies rdf:parseType="log:Quote">
+                <rdf:Description rdf:about="C">
+                    <nand3>true</nand3>
+                </rdf:Description>
+            </log:implies>
+            <rdf:Description>
+                <log:is rdf:parseType="log:Quote">
+                    <rdf:Description rdf:about="G1">
+                        <gnand3 rdf:resource="X"/>
+                        <nandnand1 rdf:resource="G2"/>
+                    </rdf:Description>
+                    <rdf:Description rdf:about="G2">
+                        <gnand1 rdf:resource="X"/>
+                    </rdf:Description>
+                    <rdf:Description rdf:about="X">
+                        <nand3 rdf:resource="V"/>
+                    </rdf:Description>
+                </log:is>
+                <log:implies rdf:parseType="log:Quote">
+                    <rdf:Description rdf:about="X">
+                        <nand1 rdf:resource="V"/>
+                    </rdf:Description>
+                </log:implies>
+                <rdf:Description>
+                    <log:is rdf:parseType="log:Quote">
+                        <rdf:Description rdf:about="A">
+                            <nand1>false</nand1>
+                        </rdf:Description>
+                        <rdf:Description rdf:about="B">
+                            <nand2>true</nand2>
+                        </rdf:Description>
+                        <rdf:Description rdf:about="G">
+                            <gnand1 rdf:resource="A"/>
+                            <gnand2 rdf:resource="B"/>
+                            <gnand3 rdf:resource="C"/>
+                        </rdf:Description>
+                    </log:is>
+                    <log:implies rdf:parseType="log:Quote">
+                        <rdf:Description rdf:about="C">
+                            <nand3>true</nand3>
+                        </rdf:Description>
+                    </log:implies>
+                    <rdf:Description>
+                        <log:is rdf:parseType="log:Quote">
+                            <rdf:Description rdf:about="A">
+                                <nand1>true</nand1>
+                            </rdf:Description>
+                            <rdf:Description rdf:about="B">
+                                <nand2>false</nand2>
+                            </rdf:Description>
+                            <rdf:Description rdf:about="G">
+                                <gnand1 rdf:resource="A"/>
+                                <gnand2 rdf:resource="B"/>
+                                <gnand3 rdf:resource="C"/>
+                            </rdf:Description>
+                        </log:is>
+                        <log:implies rdf:parseType="log:Quote">
+                            <rdf:Description rdf:about="C">
+                                <nand3>true</nand3>
+                            </rdf:Description>
+                        </log:implies>
+                        <rdf:Description>
+                            <log:is rdf:parseType="log:Quote">
+                                <rdf:Description rdf:about="A">
+                                    <nand1>true</nand1>
+                                </rdf:Description>
+                                <rdf:Description rdf:about="B">
+                                    <nand2>true</nand2>
+                                </rdf:Description>
+                                <rdf:Description rdf:about="G">
+                                    <gnand1 rdf:resource="A"/>
+                                    <gnand2 rdf:resource="B"/>
+                                    <gnand3 rdf:resource="C"/>
+                                </rdf:Description>
+                            </log:is>
+                            <log:implies rdf:parseType="log:Quote">
+                                <rdf:Description rdf:about="C">
+                                    <nand3>false</nand3>
+                                </rdf:Description>
+                            </log:implies>
+                            <rdf:Description>
+                                <log:is rdf:parseType="log:Quote">
+                                    <rdf:Description rdf:about="G1">
+                                        <gnand3 rdf:resource="X"/>
+                                        <nandnand2 rdf:resource="G2"/>
+                                    </rdf:Description>
+                                    <rdf:Description rdf:about="G2">
+                                        <gnand2 rdf:resource="X"/>
+                                    </rdf:Description>
+                                    <rdf:Description rdf:about="X">
+                                        <nand3 rdf:resource="V"/>
+                                    </rdf:Description>
+                                </log:is>
+                                <log:implies rdf:parseType="log:Quote">
+                                    <rdf:Description rdf:about="X">
+                                        <nand2 rdf:resource="V"/>
+                                    </rdf:Description>
+                                </log:implies>
+                            </rdf:Description>
+                        </rdf:Description>
+                    </rdf:Description>
+                </rdf:Description>
+            </rdf:Description>
+        </rdf:Description>
+    </rdf:Description>
+</rdf:RDF>

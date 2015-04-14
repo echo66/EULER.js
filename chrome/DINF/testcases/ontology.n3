@@ -1,0 +1,20 @@
+
+# File ontology.axiom.n3
+# 
+
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
+@prefix : <ontology#>.
+@prefix log: <http://www.w3.org/2000/10/swap/log#>.
+
+:insectivora rdfs:subClassOf :mammalia.
+:mammalia rdfs:subClassOf :vertebrae.
+:spitsmuis rdfs:subClassOf :insectivora. 
+
+
+{{:c1 rdfs:subClassOf :c2. :c2 rdfs:subClassOf :c3} log:implies
+{:c1 rdfs:subClassOf :c3}} a log:Truth; log:forAll :c1, :c2, :c3.
+
+
+
+
+

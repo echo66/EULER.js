@@ -1,0 +1,14 @@
+# $Id: authen.axiom.n3,v 1.1 2005/02/23 22:14:07 naudts Exp $
+
+@prefix log: <http://www.w3.org/2000/10/swap/log#>.
+@prefix : <authen#>.
+
+<mailto:jos.deroo.jd@belgium.agfa.com> :member <http://www.agfa.com>.
+<http://www.agfa.com> :w3cmember <http://www.w3.org>.
+<http://www.agfa.com> :subscribed <mailto:w3c-ac-forum@w3.org/>.
+
+{{:person :member :institution.
+  :institution :w3cmember <http://www.w3.org>.
+  :institution :subscribed :mailinglist} log:implies
+{:person :authenticated :mailinglist}} a log:Truth; log:forAll :person, :mailinglist, :institution.
+

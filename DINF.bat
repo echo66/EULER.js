@@ -1,0 +1,1 @@
+d:\xulrunner\xulrunner.exe DINF.ini -jsconsole

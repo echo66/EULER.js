@@ -1,0 +1,14 @@
+# test of procedure format for N3 -- G.Naudts 19/2/2005
+
+@prefix log: <http://www.w3.org/2000/10/swap/log#>.
+@prefix math: <http://www.w3.org/2000/10/swap/math#>.
+@prefix : <proctest2#>.
+@prefix proc: <proctest#>.
+
+# calculate ax + b
+:line proc:variables (?a ?b ?x ?z);
+    proc:proc {
+          {(?a ?x) math:product _:y.
+          (_:y ?b) math:sum ?z1.} => {[:result ?z1]}};
+    proc:query {[:result ?z]}.
+         

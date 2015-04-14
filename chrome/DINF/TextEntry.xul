@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/css" href="chrome://global/skin"?>
+ <wizard id="textEntryWizard" title="Text Entry Zone" onwizardfinish="sendText()"
+    xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+ 	xmlns:xul    = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+    <xul:script language="javascript1.7">
+    <![CDATA[
+
+  /**
+   * Example call:
+   *     window.openDialog("./TextEntry.xul","Web Service Name", "chrome, width=600,height=300",
+   *     "Please, enter a name for the Web Service:", this.axiomFileName, "application.callWS" );
+   *
+   * Author: Guido J.M. Naudts Bouwel
+   */
+
+  var application = opener.application;
+  var callbackD;
+
+
+    function sendText(){
+        var inputText = document.getElementById("inputZone").value;
+        var str = "(\"" + inputText + "\");"
+        str = application.replaceChars(str,"\n","");
+        str = application.replaceChars(str,"\r","");
+        //application.writeln("inputText == " + inputText);
+        callbackD = callbackD + str;
+        eval(callbackD);
+
+    }
+
+    function getExplanation(){
+         document.getElementById("explanationZone").value = window.arguments[0];
+         if (window.arguments[1] != undefined){
+             document.getElementById("inputZone").value = window.arguments[1];
+         }
+         callbackD = window.arguments[2];
+    }
+
+
+  ]]>
+
+    </xul:script>
+    <wizardpage  pageid="last"  onpageshow="getExplanation()" >
+      <!-- This page asks for a text input whatever -->
+      <label value="TEXT INPUT"/>
+      <label value="  "/>
+      <xul:textbox multiline="true" value="" id="explanationZone" />
+      <xul:textbox multiline="true" value="" id="inputZone" />
+
+    </wizardpage>
+
+
+
+</wizard>

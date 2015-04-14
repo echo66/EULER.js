@@ -1,0 +1,8 @@
+# Guido Naudts Test of javascript builtin 3/8/2009
+
+@prefix log: <http://www.w3.org/2000/10/swap/log#>.
+@prefix : <test#>.
+@prefix em: <http://eulermoz/builtins#>.
+
+#:a :b ?x.
+?cube :color :white.

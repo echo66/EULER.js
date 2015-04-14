@@ -1,0 +1,14 @@
+# test for dynamic windows
+
+@prefix log: <http://www.w3.org/2000/10/swap/log#>.
+@prefix : <window#>.
+
+{?framex :color "red"} => {?framex :newcolor "blue"}.
+{?framex :color "blue"} => {?framex :newcolor "yellow"}.
+
+{?framex :color "green"} => {?framex :newcolor "red"}.
+{?framex :color "yellow"} => {?framex :newcolor "green"}.
+
+
+{?framex :color ?c1. ?framey :color ?c1} => {?framey :newcolor "random"}. 
+

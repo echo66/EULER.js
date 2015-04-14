@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/css" href="chrome://global/skin"?>
+<!DOCTYPE xul:window [
+	<!ENTITY rdf 'http://www.w3.org/1999/02/22-rdf-syntax-ns#'>
+	<!ENTITY sample  "http://www.sampleurl.org/rdfs/sample#">
+]>
+<xul:window
+	xmlns = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+	xmlns:xul    = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+	xmlns:sample = "&sample;"
+        xmlns:html="http://www.w3.org/1999/xhtml"  
+	xmlns:rdf    = "&rdf;">
+
+        <xul:script language="javascript1.7" src="var.js"/>
+        <xul:script language="javascript1.7" src="RDFUnify.js"/>
+        <xul:script language="javascript1.7" src="RDFEngine.js"/>
+        <xul:script language="javascript1.7" src="Jsengine.js"/>
+        <xul:script language="javascript1.7" src="Forward.js"/>
+        <xul:script language="javascript1.7" src="Parameter.js"/>
+        <xul:script language="javascript1.7" src="MRUArray.js"/>
+        <xul:script language="javascript1.7" src="XML2n3.js"/>
+        <xul:script language="javascript1.7" src="interface.js"/>
+        <xul:script language="javascript1.7" src="WebService.js"/>
+        <xul:script language="javascript1.7" src="Utils.js"/>
+        <xul:script language="javascript1.7" src="XULInterface.js"/>
+        <xul:script language="javascript1.7" src="N3EParser.js"/>
+        <xul:script language="javascript1.7" src="Builtins.js"/>
+        <xul:script language="javascript1.7">
+<![CDATA[
+/** Test module
+  * Author: Guido J.M. Naudts Bouwel
+  */
+var application = window;
+// This var is a referrer to window object where scripts are loaded.
+// It offers an easy way to access the api wherever you are,
+// iframe or a child window. In case you need an iframe, this code
+// needs to be added to the xul in the iframe:
+//       var application = parent.application
+// In case you need a window, this code needs to be added:
+//  var application = opener.application
+
+function execTest(){
+    //var test = ["aa","bb","cc"];
+    //writeln("Array= " + test);
+    //transformToXML(soapExample2);
+    //writeln(transformToXML(wsdlExample));
+    //testE4X();
+    //XMLDomTest();
+    var ws = new WebService();
+    ws.acceptSoap(soapExample1);
+    //writeln("Nr. " + resNrsInst.nextNumber() );
+    //writeln("Nr. " + resNrsInst.nextNumber() );
+}
+
+
+
+function writeln(text){
+       document.getElementById('resultsText').value =
+           document.getElementById('resultsText').value + text + "\n";
+
+}
+
+ ]]>
+  </xul:script>
+ <xul:vbox flex="1">
+   <xul:button label="TEST" style="color: blue;" oncommand="execTest()"/>
+   <xul:textbox multiline="true" value="" id="resultsText" flex="1.0"/>
+ </xul:vbox>
+</xul:window>

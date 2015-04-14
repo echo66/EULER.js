@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/css" href="chrome://global/skin"?>
+<!DOCTYPE xul:window [
+	<!ENTITY rdf 'http://www.w3.org/1999/02/22-rdf-syntax-ns#'>
+	<!ENTITY sample  "http://www.sampleurl.org/rdfs/sample#">
+]>
+<xul:window  onload="initiate()"  onclose="closeIt()"
+	xmlns = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+	xmlns:xul    = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+	xmlns:sample = "&sample;"
+    xmlns:html="http://www.w3.org/1999/xhtml"
+	xmlns:rdf    = "&rdf;">
+    <xul:script language="javascript1.7">
+
+		<![CDATA[
+
+  /**
+    * Author: Guido J.M. Naudts Bouwel
+    */
+  var application = opener.application;
+
+  function initiate(){
+      if (window.arguments[1] == "print"){
+          document.getElementById("thisButton").label="Print";
+
+      }
+
+      document.getElementById("inputZone").value = window.arguments[0];
+  }
+
+  function closeIt(){
+      if (window.arguments[1] == "print"){
+          print();
+         // application.printWindow();
+      }else{
+          window.close();
+      }
+  }
+
+  ]]>
+
+    </xul:script>
+      <!-- This page displays a text -->
+      <label value="TEXT DISPLAY"/>
+      <label value="  "/>
+      <xul:textbox value="" multiline="true" id="inputZone" flex="1"/>
+      <xul:button id="thisButton" label="Close" style="color: blue;" oncommand="closeIt()"/>
+</xul:window>

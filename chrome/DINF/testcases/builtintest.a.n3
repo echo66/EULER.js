@@ -1,0 +1,36 @@
+# Guido Naudts Test of javascript builtin 3/8/2009
+
+@prefix log: <http://www.w3.org/2000/10/swap/log#>.
+@prefix : <test#>.
+@prefix em: <http://eulermoz/builtins#>.
+
+#{?x em:js "2*3;". ?y em:js "2*?x?;"} => {:a :b ?y}.
+#{:c :d :e} => {:a :b :e}.
+#:c :d :e.
+#{?z em:jsp "progTest"} => {:a :b ?z}.
+# "progTest" em:program "10*100;
+#  ".
+
+# test of dnot
+:cube1 :color :green.
+:cube2 :color :purple.
+"""{?cube :color :green} => {[em:dnot {?cube :color :black. ?cube :color :blue}]}.
+{[em:dnot {?cube :color ?color1. ?cube :color ?color2. }].
+           } => {?cube :color :white}.
+{?cube :color :purple} => {[em:dnot {?cube :color :red. ?cube :color :yellow}]}."""
+
+{?cube :color :green} => {:x em:dnot {?cube :color :black. ?cube :color :blue}}.
+{?a em:dnot {?cube :color ?color1. ?cube :color ?color2.}.
+   } => {?cube :color :white}.
+{?cube :color :purple} => {:y em:dnot {?cube :color :red. ?cube :color :yellow}}.
+
+# query: ?cube :color :white.
+
+#:cube2 :color :red.
+#:cube2 :color :yellow.
+
+:cube1 :color :black.
+:cube1 :color :blue.
+
+[em:dnot {:cube3 :color :lightGreen}].
+:cube3 :color :lightGreen. 

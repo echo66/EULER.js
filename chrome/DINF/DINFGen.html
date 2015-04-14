@@ -1,0 +1,126 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<!-- Created on 02-janv.-2010 22:32:49
+     Author: Guido J.M. Naudts Bouwel
+-->
+
+<html>
+   <head>
+      <title>
+         DINFGen.html
+      </title>
+      <meta name="GENERATOR" content="Arachnophilia 5.3">
+      <meta name="FORMATTER" content="Arachnophilia 5.3">
+   </head>
+
+   <body bgcolor="#ffffff" text="#000000" link="#0000ff" vlink="#800080" alink="#ff0000">
+
+      <u><b>The DINF system</b></u> <br><br>
+      DINF stands for <b>D</b>istributed <b>INF</b>erencing. DINF uses web services.<br><p>
+      Web Services with one click? No, web services with <b>no click at all!!!</b><br>
+      You can make a web service in four steps:<br>
+      1) Read the Notation 3 (N3) primer: <A HREF="http://www.w3.org/2000/10/swap/Primer">Notation 3</A><br>
+      2) Put your data for your web service in Notation 3 format.<br>
+      3) Place your Notation 3 file in the directory ../wsApps.<br>
+      4) Start the program DINF.xul.<br>
+      Now your web service is active and can be queried using a soaprequest in the format according to <br>
+      the WSDL description (to be found under the menu 'Web Services').<br>
+      An example soaprequest can be found at the end of this text.<br>
+      So how does it work? In the soap request the name of your N3 file is given (but without the postfix .n3)<br>
+      between the  &lt;em:Application&gt; tags. A query wich will be answered using your N3 file is between the <br>
+      &lt;em:Query&gt; tags. And that's it. You do not have to make a whole lot of diferent web services, <br>
+      there is only one web service.<p>
+      The DINF program can also direct soap requests to your web services. See the WS wizard.<br>
+      The program also offers support for working with Notation 3 files and querying them, <br>
+      using either a forward or a backward reasoner. <br>
+      The web service uses a forward reasoner. A backward reasoner will become available in next versions.<br>
+      See the different wizards and help files for more explanations.<p>
+      For a good introduction to web services, see:<br>
+      <A HREF="http://www.w3schools.com/webservices/default.asp">Web Services Tutorial</A>
+      <pre>
+      <b><u>soap request example</u></b>
+      
+          &lt;?xml version='1.0'?&gt;
+          &lt;soap:Envelope
+              xmlns:soap='http://www.w3.org/2001/12/soap-envelope' 
+              soap:encodingStyle='http://www.w3.org/2001/12/soap-encoding'&gt;
+              &lt;soap:Body xmlns:em='http://eulermoz/soap#'&gt;
+                &lt;em:Query&gt; &lt;em:Application&gt;authen&lt;/em:Application&gt;
+                  @prefix : &lt;authen#&gt;.
+                  ?who :authenticated ?mailinglist.
+                &lt;/em:Query&gt;
+              &lt;/soap:Body&gt;
+          &lt;/soap:Envelope&gt;
+          
+      <b><u>soap response example</u></b>    
+      
+          &lt;?xml version='1.0'?&gt;
+          &lt;soap:Envelope&gt; 
+              xmlns:soap='http://www.w3.org/2001/12/soap-envelope' 
+              soap:encodingStyle='http://www.w3.org/2001/12/soap-encoding'&gt;
+              &lt;soap:Body xmlns:em='http://eulermoz/soap#'&gt;
+                  &lt;em:Response&gt; &lt;em:Application&gt;authen&lt;/em:Application&gt;
+                      ':a log:notEqualTo :b.
+                      :c log:notEqualTo :d.'
+                  &lt;/em:Response&gt;
+              &lt;/soap:Body&gt;
+          &lt;/soap:Envelope&gt;
+          
+      <b><u>WSDL definition</u></b>  
+
+      &lt;?xml version='1.0'?&gt;
+      &lt;definitions xmlns='http://schemas.xmlsoap.org/wsdl/'
+       xmlns:soap='http://schemas.xmlsoap.org/soap/envelope/'&gt;
+      &lt;message  name='executeQuery'&gt;
+        &lt;part name='query' type='xs:string'/&gt;
+      &lt;/message&gt;
+
+      &lt;message name='queryResponse'&gt;
+        &lt;part name='value' type='xs:string'/&gt;
+      &lt;/message&gt;
+
+      &lt;portType name='DINF'&gt;
+        &lt;operation name='queryDB'&gt;
+      &lt;input message='executeQuery'/&gt;
+      &lt;output message='queryResponse'/&gt;
+        &lt;/operation&gt;
+      &lt;/portType&gt;
+
+      &lt;binding type='DINF' name='DINFB'&gt;
+         &lt;soap:binding  style='document'
+         transport='http://schemas.xmlsoap.org/soap/http' /&gt;
+         &lt;operation&gt;
+       &lt;soap:operation soapAction='http://eulermoz/webServices/queryDB'/&gt;
+       &lt;input&gt;&lt;soap:body use='literal'/&gt;&lt;/input&gt;
+       &lt;output&gt;&lt;soap:body use='literal'/&gt;&lt;/output&gt;
+        &lt;/operation&gt;
+      &lt;/binding&gt;
+      &lt;/definitions&gt;
+
+  
+          
+      </pre>
+      <b>References</b><br><br>
+      <A HREF="http://www.w3.org/2001/sw/"> SemanticWeb Initiative </A><br>
+
+      <A HREF="http://www.w3.org/RDF/">RDF - Resource Description Framework</A><br>
+      <A HREF="http://www.w3schools.com/rdf/default.asp">RDF Tutorial</A>
+      <A HREF="http://www.w3schools.com/rdf/rdf_schema.asp">RDF Schema</A><br>
+      <A HREF="http://www.w3schools.com/rdf/rdf_owl.asp">OWL - Ontology Web Language</A><br>
+      <A HREF="http://www.w3.org/2000/10/swap/Primer">Notation 3</A><br>
+      <A HREF="http://www.agfa.com/w3c/euler/">Euler</A>: inferencing with Java and C#<br>
+      <A HREF="http://www.w3.org/2000/10/swap/doc/">CWM</A>: inferencing with Python<br>
+      <A HREF="http://www.agfa.com/w3c/2002/02/thesis/thesis.pdf">An inference engine for RDF.</A><br>
+      <A HREF="http://eulersharp.sourceforge.net/2004/02swap/RDFEngine/RDFEngine.html">
+      RDFEngine</A>: inferencing with Python<br>
+      <A HREF="http://sourceforge.net/projects/simply-rdf/">
+      SimplyRDF</A>: RDF API and inferencing with Java<br>
+      <A HREF="http://eulersharp.sourceforge.net/2004/02swap/OWLLogic/owllogic.html">
+      OWLLogic</A>: OWL Reasoner<br>
+      <A HREF="http://www.daml.org/2003/11/swrl/">SWRL</A>:Semantic web rule language<br>
+      <A HREF="http://www.ninebynine.org/RDFNotes/Swish/Intro.html">SWISH</A>: inferencing with Haskell <br>
+
+   
+
+   </body>
+</html>

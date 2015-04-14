@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/css" href="chrome://global/skin"?>
+    <xul:window id="textEntryWizard" title="Text Entry Zone" onload="getExplanation()" onclose="sendText()"
+            xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+             xmlns:xul    = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+    <xul:script language="javascript1.7">
+    <![CDATA[
+        /**
+          * Author: Guido J.M. Naudts Bouwel
+          */
+
+        var application = opener.application;
+        var explanation;
+        var queryName;
+
+          function sendText(){
+              var inputText = document.getElementById("inputZone").value;
+              try{
+                  value = application.queriesBuffer.get(queryName);
+                  application.queriesBuffer.remove(queryName);
+                  application.queriesBuffer.add(inputText, value);
+              }catch(exception){}
+              application.writeMessage("Query " + queryName + " renamed to: " +
+                  inputText + "\n");
+
+              application.document.getElementById("queries").selectedItem =
+              application.document.getElementById("queries").appendItem(inputText);
+
+              window.close();
+          }
+
+          function getExplanation(){
+               document.getElementById("explanationZone").value = "Enter a name for the query or take the default.\n" +
+                   "Then push check to control the name.";
+               document.getElementById("inputZone").value = "query" + application.queriesBuffer.getSize();
+               queryName = window.arguments[0];
+          }
+
+          function checkName(){
+              var inputText = document.getElementById("inputZone").value;
+              var done = false;
+              var existsV = false;
+              var i = 1;
+              while (!done){
+                   // check for duplicate names
+                   if (application.queriesBuffer.get(inputText) != undefined){
+                        document.getElementById("explanationZone").value = "The name exists already.\n" +
+                             "Enter a name for the query or take the default.";
+                        document.getElementById("inputZone").value = "query" + (application.queriesBuffer.getSize() + i);
+                        i++;
+                        inputText = document.getElementById("inputZone").value;
+                   }else{
+                        done = true;
+                   }
+              }
+              document.getElementById("explanationZone").value = "The name is valid! You can close the window now!\n";
+
+           }
+
+          ]]>
+
+
+          </xul:script>
+          <vbox>
+            <!-- This page asks for a text input whatever -->
+            <label value="TEXT INPUT"/>
+            <label value="  "/>
+            <xul:textbox multiline="true" value="" id="explanationZone" />
+            <xul:textbox value="" id="inputZone" />
+            <xul:button label="Check" oncommand="checkName()"/>
+            <xul:button label="Close" oncommand="sendText()"/>
+          </vbox>
+
+
+
+      </xul:window>

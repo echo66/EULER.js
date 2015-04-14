@@ -1,0 +1,66 @@
+Interface towards mozilla of inferencing engine
+Author: G.Naudts   Bouwel
+
+
+Input wanted:
+list of RDF datasources of which last one is query
+
+
+Wanted structure and functions:
+
+datasource.getAllTriples() returns a list containing triples(objects) of which some are rules
+if t is a triple, the:
+t.getType() returns 't' for a triple, 'ct' for a complex triple and 'r' for a rule.
+So the structure is: [t1, t2, r1, r2, ....]
+
+
+t.toString(): returns a triple in a printable string(N3 format)
+
+t.getSubject()
+t.getProperty()
+t.getObject()
+t.setSubject()
+t.setProperty()
+t.setObject()
+
+if t is a rule:
+t.getAntecedents()
+t.getConsequents()
+t.setAntecedents()
+t.setConsequents()
+
+
+Resources:
+
+two types: resource and cResource
+cResource is a complex resource (contains a tripleset)
+r.getType(): 'sr' for a simple resource, 'ct' for a complex resource.
+
+r.testVar(): test whether this resource is a variable; returns 0 or 1
+testEqualResources(res1, res2): returns 0 or 1
+r.getUri(): returns the uri of this resource
+
+If a resource is a list, the list attribute = 1.(r.list = 1)
+r.getList(): returns the list (array of nodes)
+
+r.getLabel: if r.label is defined returns the label (prefix:postfix)
+                   else returns r.uri
+
+Paths: paths are transformed by the parser to triples??
+
+function print() for printing
+
+A  about the engine
+
+The engine is based on RDFEngine.py also on sourceforge:
+eulersharp.sourceforge.net/ 2004/02swap/RDFEngine/RDFEngine.html
+The anti-looping mechanism and anti-looping code in Jsengine is from Jos De Roo.
+The gedcom example is also taken from Jos De Roo.
+
+
+
+
+
+
+
+

@@ -1,0 +1,135 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<!-- Created on 01-nov.-2009 23:38:07
+      Author: Guido J.M. Naudts Bouwel
+-->
+
+<html>
+   <head>
+      <title>
+         DINF Explanation
+      </title>
+      <meta name="GENERATOR" content="Arachnophilia 5.3">
+      <meta name="FORMATTER" content="Arachnophilia 5.3">
+   </head>
+
+   <body bgcolor="#ffffff" text="#000000" link="#0000ff" vlink="#800080" alink="#ff0000">
+   <p>
+<b>Menu Apps</b><br>
+This is the application menu. You can open applications: <i>"Open App"</i>, save applications: <i>"Save App"</i> or save applications
+ with a new name: <i>"Save App As"</i>.<br>
+ An application is a file describing a set of a Notation 3 (N3) data file, a file containing queries in  Notation 3 format
+  and  parameters. The application file has the suffix .app and is also in format N3.<br>
+ <b>Notation 3</b> has a central role in this program. It was developed by <i>Tim Berners-Lee</i><br>
+ An explanation of his hand can be found on: <A HREF="http://www.w3.org/2000/10/swap/Primer">Notation 3</A><br> <br>
+ The <i>'Exit'</i> menuitem first asks the user if does not want to save the application. If he
+ says 'Yes' then the application save process is executed and then the system exits. If he says 'No'
+  the system exits immediately.  <p>
+<b>Menu Wizards</b><br>
+The <i>'Demo'</i> menuitem uses alert boxes, might seem somewhat strange but you can quickly learn the most important things.<br>
+The <i>'QuickStartWizard'</i> menuitem gives more or less the same information, but uses the XUL wizard system.<p>
+The <i>'Application Flow Chart'</i> menuitem show a flow chart that demonstrates how to create an application.<p>
+<b>Menu Web Services</b><br>
+The <i>'Start Server'</i> menuitem starts the web service server.<p>
+The <i>'Stop Server'</i> menuitem stops the web service server.<p>
+The <i>'Save Web Service'</i> menuitem saves the source code in the zone "Source Code" as a web service.<br>
+See 'Menu Help', item 'Web Services' for an explanation of the mechanism. <p>
+The <i>'Query Web Service'</i> menuitem permits to query a web service who was created with the DINF system.<br>
+(No other web services!!!).<p>
+The <i>'Set Port'</i> menuitem permits to change the TCP/IP port on which the web service server is listening.<br>
+The default is: 10000.<p>
+The <i>'View WSDL'</i> shows the WSDL definition of the webservice.There is one unique web service for <br>
+querying all N3 files.<p>
+<b>Menu Source Code</b><br>
+Though this product is intended to work with files in Notation 3 format, nevertheless with the menuitem <i>'Open'</i> 
+ you can read any file. There is a filter wich selects the N3 files, but you can change this with eg *.txt in the file 
+ selection zone.  You can then eventually edit this file or merge with other files and then save it with <i>'Save'</i> 
+ or, if you want to change the name, with: <i>'Save As'</i>.<br>
+With <i>'Save Queries'</i> you can save the queries. If a name is known for the queryfile then it will be used. Otherwise 
+a name will be asked for. <br>
+With <i>'Save Output'</i> the output zone will be saved to a file. The system will always ask for a filename.<br>
+With <i>'Save Messages'</i> the message zone will be saved to a file. The system will always ask for a filename.
+<p>
+<b>Menu Print</b><br>
+With this menu different zones of the screen can be printed. <br>
+With <i>'Print source'</i> the source zone will be printed.<br>
+With <i>'Print output'</i> the output zone will be printed.<br>
+With <i>'Print messages'</i> the message zone will be printed.<p>
+
+<b>Menu Clear</b><br>
+With this menu different zones of the screen can be cleared. <br>
+With <i>'Clear output'</i> the output zone can be cleared.<br>
+With <i>'Clear source'</i> the source zone can be cleared.<br>
+With <i>'Clear messages'</i> the message zone can be cleared.<br>
+With <i>'Clear query'</i> the query zone can be cleared.<p>
+<b>Menu Reasoners</b><br>
+The DINF package supports two reasoners: a forward reasoner and a backward reasoner. 
+By default the forward reasoner will be used. Here however you can select also the backward reasoner.<br>
+With <i>'Forward reasoner'</i> you select the forward reasoner.<br>
+With <i>'Backward reasoner'</i> you select the backward reasoner.<p>
+<b>Menu Help</b><br>
+With <i>'Content'</i> this text is displayed.<br>
+With <i>'About'</i> the acronym DINF is explained (<b>D</b>istributed <b>Inf</b>erencing) 
+and the version of the system is given (1.0).
+
+<b>Other contents of the screen</b><br>
+Now I will say something about the textareas, lists and buttons that are on the screen.
+<br><br>
+<b><u>Left part of the screen</u></b><br>
+Under the heading <i>'Most recent apps'</i> a list is maintained of the most recently opened apps.<br>
+The number of apps in that list is limited to 10.<br>
+Under the list is a button <i>'Load app'</i> for laoding an application and a button <br>
+<i>'Delete app'</i> for deleting an application <b>from the list.</b>The application itself <br>
+will not be deleted!<p>
+Under these buttons there is the textarea labeled <i>'Output'</i>. Here the output of queries is shown.<br>
+Under the textarea is a button <i>'Clear output'</i> for clearing the textarea. <p><br>
+<b><u>Central part of the screen</u></b><br>
+The textarea labeled <i>'Source code'</i> is meant to contain N3(Notation 3 ) source code.<br>
+The user is naturally free to enter whatever he likes. The contents can be saved by using the menu 'Source Code'.<br>
+Under the 'Source code' textarea we have the <i>'Messages'</i> textarea, where normally messages of the system will appear.<br>
+All textareas are writable and can be saved to disk. This can be handy for adding commentaries and keeping them.<br>
+<br><p>
+<b><u>Right part of the screen</u></b><br>
+The textarea labeled <i>'QUERIES'</i> is used for querying the N3 source code that is in the 'Source code' area.<br>
+Queries are N3 statements that can contain variables; for more explanation see: <br>
+<A HREF="http://eulersharp.sourceforge.net/2004/02swap/RDFEngine/inferencing.htm">Inferencing with RDF and Notation 3 for beginners</A><br>
+The button <i>'Execute'</i> under the textarea will execute the query and the results of the query will be exposed in 
+the 'Output' textarea.<br>
+The button <i>'Add query'</i> will add the query to the list of queries labeled <i>'Query list'</i>.<br>
+This is usefull is there are queries you want to use regularly, also for querying web services.<br>
+The list of queries can be saved to disk.<br><p>
+The we have the query list. Queries can be saved in this list by giving them a name. A query can be sleceted by its name and<br>
+moved to the 'QUERIES' textarea for execution. A window with a list of available queries can be obtained.<br>
+There are quit some manipulations possible on the queries:<br>
+- the button <i>'Select query'</i> moves the query that is selected in the list to the 'QUERIES' textarea.<br>
+- the button <i>'Delete query'</i> removes the selected query from the list.<br>
+- the button <i>'Rename query'</i> gives a different name to teh selected query.<br>
+- the button <i>'Show queries'</i> will show the list of names and their associated query in a separate window.<br>
+- the button <i>'Save'</i> will save the list of queries to disk.<br>
+- the button <i>'Restore'</i> will fill the list by reading a query file from the disk.<br> 
+
+<b>References</b><br><br>
+<A HREF="http://www.w3.org/2001/sw/"> SemanticWeb Initiative </A><br>
+
+<A HREF="http://www.w3.org/RDF/">RDF - Resource Description Framework</A><br>
+<A HREF="http://www.w3schools.com/rdf/default.asp">RDF Tutorial</A>
+<A HREF="http://www.w3schools.com/rdf/rdf_schema.asp">RDF Schema</A><br>
+<A HREF="http://www.w3schools.com/rdf/rdf_owl.asp">OWL - Ontology Web Language</A><br>
+<A HREF="http://www.w3.org/2000/10/swap/Primer">Notation 3</A><br>
+<A HREF="http://www.agfa.com/w3c/euler/">Euler</A>: inferencing with Java and C#<br>
+<A HREF="http://www.w3.org/2000/10/swap/doc/">CWM</A>: inferencing with Python<br>
+<A HREF="http://www.agfa.com/w3c/2002/02/thesis/thesis.pdf">An inference engine for RDF.</A><br>
+<A HREF="http://eulersharp.sourceforge.net/2004/02swap/RDFEngine/RDFEngine.html">
+RDFEngine</A>: inferencing with Python<br>
+<A HREF="http://sourceforge.net/projects/simply-rdf/">
+SimplyRDF</A>: RDF API and inferencing with Java<br>
+<A HREF="http://eulersharp.sourceforge.net/2004/02swap/OWLLogic/owllogic.html">
+OWLLogic</A>: OWL Reasoner<br>
+<A HREF="http://www.daml.org/2003/11/swrl/">SWRL</A>:Semantic web rule language<br>
+<A HREF="http://www.ninebynine.org/RDFNotes/Swish/Intro.html">SWISH</A>: inferencing with Haskell <br>
+
+
+      
+
+   </body>
+</html>

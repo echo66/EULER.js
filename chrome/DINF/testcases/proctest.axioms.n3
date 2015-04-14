@@ -1,0 +1,10 @@
+# test of procedure format for N3 -- G.Naudts 19/2/2005
+
+@prefix log: <http://www.w3.org/2000/10/swap/log#>.
+@prefix math: <http://www.w3.org/2000/10/swap/math#>.
+@prefix : <proctest#>.
+@prefix proc: <proctest#>.
+
+:cube proc:variables (?a ?b); 
+     proc:proc { {(?a ?a) math:product ?b1} => {[:result ?b1]}};
+     proc:query {[:result ?b]}.

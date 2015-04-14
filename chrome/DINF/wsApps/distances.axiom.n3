@@ -1,0 +1,25 @@
+
+# distance example Guido Naudts 23/1/2010
+# about some distances between belgium cities
+
+@prefix : <http://test#>.
+@prefix math: <http://www.w3.org/2000/10/swap/math#>.
+
+# rules
+{[:distance (?c1 ?c2); :value ?v1].
+ [:distance (?c2 ?c3); :value ?v2].
+  (?v1 ?v2) math:sum ?v3} => {[:distance (?c1 ?c3); :value ?v3]}.
+
+#{[:distance (?c1 ?c2); :value ?v1]} => {[:distance (?c2 ?c1); #:value ?v1]}.
+
+
+
+[:distance ("Antwerpen" "Brussels"); :value "61"].
+[:distance ("Liège" "Brussels"); :value "97"].
+#"Liège" :distance "Bastogne"; :value "87".
+#"Bastogne" :distance "Arlon"; :value "40".
+#"Brugge" :distance "Gent"; :value "56".
+#"Gent" :distance "Brussels"; :value "57".
+#"Oostende" :distance "Brugge"; :value "29".
+#"Brussels" :distance "Namur"; :value "63".
+#"Namur" :distance "Liège"; :value "64".

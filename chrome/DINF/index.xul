@@ -1,0 +1,373 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/css" href="chrome://global/skin"?>
+<!DOCTYPE xul:window [
+	<!ENTITY rdf 'http://www.w3.org/1999/02/22-rdf-syntax-ns#'>
+	<!ENTITY sample  "http://www.sampleurl.org/rdfs/sample#">
+]>
+<xul:window
+	xmlns = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+	xmlns:xul    = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+	xmlns:sample = "&sample;"
+	xmlns:rdf    = "&rdf;">
+	<xul:script language="javascript1.5" src="../../js/utils/util.js"/>
+	<xul:script language="javascript1.5" src="../../js/utils/debug.js"/>
+	<xul:script language="javascript1.5" src="../../js/utils/jsConsoleAppender.js"/>
+	<xul:script language="javascript1.5" src="../../js/parser/lib/StringBuffer.js"/>
+	<xul:script language="javascript1.5" src="../../js/parser/lib/StringReader.js"/>
+	<xul:script language="javascript1.5" src="../../js/parser/n3/N3Symbols.js"/>
+	<xul:script language="javascript1.5" src="../../js/parser/lib/Datatype.js"/>
+	<xul:script language="javascript1.5" src="../../js/parser/lib/LiteralType.js"/>
+	<xul:script language="javascript1.5" src="../../js/parser/lib/SubjectPredicatePair.js"/>
+	<xul:script language="javascript1.5" src="../../js/parser/lib/Literal.js"/>
+	<xul:script language="javascript1.5" src="../../js/parser/lib/Iterator.js"/>
+	<xul:script language="javascript1.5" src="../../js/parser/lib/ArrayList.js"/>
+	<xul:script language="javascript1.5" src="../../js/parser/lib/PredicateObjectList.js"/>
+	<xul:script language="javascript1.5" src="../../js/parser/lib/Statement.js"/>
+	<xul:script language="javascript1.5" src="../../js/parser/lib/Resource.js"/>
+	
+	<xul:script language="javascript1.5" src="../../js/parser/lib/BlankNode.js"/>
+	<xul:script language="javascript1.5" src="../../js/parser/lib/AnonymousIDGenerator.js"/>
+	<xul:script language="javascript1.5" src="../../js/parser/lib/Variable.js"/>
+	<xul:script language="javascript1.5" src="../../js/parser/lib/URIRef.js"/>
+	<xul:script language="javascript1.5" src="../../js/parser/lib/JCSymbol.js"/>
+	<xul:script language="javascript1.5" src="../../js/parser/n3/N3ScannerMethods.js"/>
+	<xul:script language="javascript1.5" src="../../js/parser/n3/N3Scanner.js"/>
+	
+	<xul:script language="javascript1.5" src="../../js/parser/lib/Predicate.js"/>
+	<xul:script language="javascript1.5" src="../../js/parser/lib/LOG.js"/>
+	<xul:script language="javascript1.5" src="../../js/parser/lib/RDF.js"/>
+	<xul:script language="javascript1.5" src="../../js/parser/lib/HashMap.js"/>
+	<xul:script language="javascript1.5" src="../../js/parser/lib/SequenceCMPGenerator.js"/>
+	<xul:script language="javascript1.5" src="../../js/parser/lib/Stack.js"/>
+	<xul:script language="javascript1.5" src="../../js/parser/lib/virtual_parse_stack.js"/>
+	<xul:script language="javascript1.5" src="../../js/parser/n3/lr_parser.js"/>
+	<xul:script language="javascript1.5" src="../../js/parser/n3/N3Parser.js"/>
+	
+	<xul:script language="javascript1.5" src="../../js/model/jsIRDFListUtils.js"/>
+	<xul:script language="javascript1.5" src="../../js/model/jsIRDFListEnumerator.js"/>
+	<xul:script language="javascript1.5" src="../../js/model/jsIRDFList.js"/>
+	<xul:script language="javascript1.5" src="../../js/model/RDFTools.js"/>
+	<xul:script language="javascript1.5" src="../../js/model/DataSource.js"/>
+	<xul:script language="javascript1.5" src="interface.js"/>
+	<xul:script language="javascript1.5" src="Utils.js"/>
+	<xul:script language="javascript1.5">
+		<![CDATA[
+			/** Global vars for running this sample
+              * Author: Guido J.M. Naudts Bouwel
+			  */
+			var application = window; // This var is a referrer to window object where scripts are loaded. 
+			                          // It offers an easy way to access the api wherever you are, both an
+																// iframe or a child window. In case you need an iframe, this code
+																// needs to be added to the xul in the iframe: 
+																//       var application = parent.application
+																// In case you need a window, this code needs to be added:
+																//       var application = opener.application
+																
+																
+			var applicationLoaded = false;
+			try {
+				netscape.security.PrivilegeManager.enablePrivilege("UniversalXPConnect"); //this line is required every time a XPCOM access is done. 
+			} catch(ex) {
+				alert("You have nout enabled privilege to XPCOM access\nPlease type about:config on the url bar, and\nchange signed.applets.codebase_principal_support value to true");
+			}
+			netscape.security.PrivilegeManager.enablePrivilege("UniversalXPConnect"); //this line is required every time a XPCOM access is done.
+			/** Init log manager and RDFTools **/
+			JsConsoleAppender.init();
+			Log.init();
+			var RDFTools = new RDFUtils();			
+			var auxDS = new DataSource();
+			function doMain() {
+			 	var scanner = null;
+				var fileReader = null;
+				var fileName   = null;
+				var nsIFilePicker = null;
+				var myFilePicker  = null;
+				var fileOk        = null;
+				var currentFile   = null;
+				
+				//try {
+					netscape.security.PrivilegeManager.enablePrivilege("UniversalXPConnect");
+					nsIFilePicker = Components.interfaces.nsIFilePicker;
+					myFilePicker  = Components.classes["@mozilla.org/filepicker;1"].createInstance(nsIFilePicker);
+					myFilePicker.init(window,"Selet the rules file",0);
+					myFilePicker.appendFilter("n3 files","*.n3");
+					fileOk = myFilePicker.show();
+					if (fileOk == nsIFilePicker.returnOK) {
+						document.getElementById("resultsText").value = "";	
+						document.getElementById("state").setAttribute("value","State: Parsing");
+						currentFile = myFilePicker.file;
+						
+						mURI = JS_FILE_IOSERVICE.newFileURI(currentFile);
+						fChannel = JS_FILE_IOSERVICE.newChannelFromURI(mURI);
+						mInputStream = new JS_FILE_InputStream();
+						mInputStream.init(fChannel.open());
+						var fileString = mInputStream.read(currentFile.fileSize);
+                                                alert(fileString); 
+						mInputStream.close();
+						scanner = new N3ScannerClass( new StringReader(fileString) );
+						var parser = new N3Parser( scanner );
+						parser.user_init();
+						parser.setDocumentURI("http://www.vicertec.org");
+						
+						var a = parser.parse().value;
+						var str = "";
+						auxDS.flush();
+						buildModel(a,parser.getStatementsToErase());
+                                                var res = auxDS.getAllTriples();
+                                                var l = [];
+						for (var i = 0; i < res.length; i++)
+                       					        l.push( RDFTripleToObject(res[i]));
+                                                // make a dict
+                                                var ret = getDict(l);
+                                                var ruleNr = ret[0];
+                                                var dict = ret[1];
+                                                for (var i1 in dict)
+                                                    print("dict[i1] = " +dict[ i1] + "\n"); 
+                                                getRulesFromSet(dict, ruleNr);
+						application.mnglog.debug(auxDS.serialize());
+						//document.getElementById("resultsText").value = auxDS.serialize();
+						document.getElementById("state").setAttribute("value","State: Ready");
+					}
+				/*}
+				catch (e) {
+					application.mnglog.error("File not found :"+fileName+"\n"+e);
+					document.getElementById("state").setAttribute("value","State: Parsing error. Look at javascript console");
+				}*/
+			}
+			var req = null;
+                                                      var ruleprefix = "urn:clerk:anon#Rule";
+                                                      var forall = "http://www.w3.org/2000/10/swap/log#forAll";
+                                                      var first = "http://www.w3.org/1999/02/22-rdf-syntax-ns#first";
+                                                      var restLi = "http://www.w3.org/1999/02/22-rdf-syntax-ns#rest";
+                                                      var nilst = "http://www.w3.org/1999/02/22-rdf-syntax-ns#nil";
+                                                      var subject = "http://www.w3.org/1999/02/22-rdf-syntax-ns#subject";
+                                                      var predicate = "http://www.w3.org/1999/02/22-rdf-syntax-ns#predicate";
+                                                      var object = "http://www.w3.org/1999/02/22-rdf-syntax-ns#object";
+                                                      var implies = "http://www.w3.org/2000/10/swap/log#implies";
+
+                                                      function getRulesFromSet(dict, rulenr) {
+                                                         // get the rules from the set of triples 
+                                                         var ind;
+                                                         var set, set1;
+                                                         var vars = [];
+                                                         var restR;
+                                                         var firsti, t, t1;
+                                                         var resti = "";
+                                                         var prop;
+                                                         var ants = [];
+                                                         var cons = [];
+                                                         var s1, p1, o1;
+                                                         var fcons;
+                                                         print("getRulesFromSet rulenr = " + rulenr + "\n");
+                                                         for (i = 0; i < rulenr+1; i++){
+                                                            ind = "rule" + rulenr;
+                                                            // get the entries
+                                                            set = dict[ind];
+                                                            // handle the rule triples
+                                                            for(var r = 0; r < set.length; r++){                                                             
+                                                                t = set[r];
+                                                                prop = t.property.uri;
+                                                                if (prop == forall)
+                                                                    vars.push(t.object.uri)
+                                                                else if (prop == restLi)
+                                                                         restR = t.object.uri;
+                                                                else if (prop == first)
+                                                                         firsti = t.object.uri;
+                                                            }
+                                                            // now get the antecedents
+                                                           set = dict[firsti];     
+                                                           print("set = " + set + "\n");
+                                                           while (resti != nilst){                                                              
+                                                              for(var r = 0; r < set.length; r++){
+                                                                  // print("set[r] = " + set[r] + "\n"); 
+                                                                  t = set[r];
+                                                                  prop = t.property.uri;
+                                                                  // print("prop = " + prop + " rest = " + restLi + "\n");
+                                                                  if (prop == first){ // this is an antecedent triple as statement 
+                                                                         set1 = dict[t.object.uri];
+                                                                         for (var r1 = 0; r1 < set1.length; r1++){
+                                                                               t1 = set1[r1];
+                                                                               if (t1.property.uri == subject)
+                                                                                   s1 = t1.object.uri;
+                                                                               else if (t1.property.uri == predicate)   
+                                                                                   p1 = t1.object.uri;                                                               
+                                                                               else if (t1.property.uri == object)   
+                                                                                   o1 = t1.object.uri;
+                                                                         }
+                                                                         ants.push(new triple(s1, p1, o1));
+                                                                  }
+                                                                  if (prop == restLi){
+                                                                         resti = t.object.uri;
+                                                                  }
+                                                                  if (prop == implies){
+                                                                         fcons = t.object.uri;
+                                                                  }
+                                                              }
+                                                               if (resti != nilst) 
+                                                                    set = dict[resti];
+                                                           }
+                                                           print("ants are: " + ants + "\n");
+                                                           // now get the consequents
+                                                           set = dict[fcons];
+                                                           resti = "";
+                                                           print("set = " + set + "\n");
+                                                           while (resti != nilst){                                                              
+                                                              for(var r = 0; r < set.length; r++){
+                                                                  // print("set[r] = " + set[r] + "\n"); 
+                                                                  t = set[r];
+                                                                  prop = t.property.uri;
+                                                                  // print("prop = " + prop + " rest = " + restLi + "\n");
+                                                                  if (prop == first){ // this is an consequent triple as statement 
+                                                                         set1 = dict[t.object.uri];
+                                                                         for (var r1 = 0; r1 < set1.length; r1++){
+                                                                               t1 = set1[r1];
+                                                                               if (t1.property.uri == subject)
+                                                                                   s1 = t1.object.uri;
+                                                                               else if (t1.property.uri == predicate)   
+                                                                                   p1 = t1.object.uri;                                                               
+                                                                               else if (t1.property.uri == object)   
+                                                                                   o1 = t1.object.uri;
+                                                                         }
+                                                                         cons.push(new triple(s1, p1, o1));
+                                                                  }
+                                                                  if (prop == restLi){
+                                                                         resti = t.object.uri;
+                                                                  }
+                                                              }
+                                                               if (resti != nilst) 
+                                                                    set = dict[resti];
+                                                           }
+                                                           print("cons are: " + cons + "\n");
+                                                           // now get the consequents
+
+                                                    }
+
+                                                 }
+		
+                                                      function print(s){
+                                       		document.getElementById("resultsText").value += s;
+                                                      }	
+
+                                                      function RDFTripleToObject(triple){
+                                                             var subS = RDFTools.resource2str(triple.subject);
+                                                             var propS = RDFTools.resource2str(triple.predicate);
+                                                             var objS = RDFTools.resource2str(triple.object);                                                   
+                                                             var sub = new  resource(subS);
+                                                             var prop = new  resource(propS);
+                                                             var obj = new  resource(objS);
+                                                             sub.label = subS;
+                                                             prop.label = propS;
+                                                             obj.label = objS;
+                                                             return new cTriple(sub, prop, obj);
+                                                      }
+          
+                                                      function getDict(set){
+                                                            var dict = [];
+                                                            var ruleNr = 0;
+                                                            var ret;
+                                                            var rule;
+                                                            for (var i = 0; i < set.length; i++){
+                                                                  var uri = set[i].subject.uri;
+                                                                  //print("uri = " + uri + "\n");
+                                                                  if (uri.substring(0,19) == ruleprefix){
+                                                                      // get the rule number
+                                                                      rest = uri.substring(19, uri.length);
+                                                                      if (ruleNr < rest)
+                                                                          ruleNr = rest;
+                                                                      rule = "rule" + rest; 
+                                                                      if (dict[rule] == undefined)
+                                                                           dict[rule] =[set[i]];
+                                                                      else
+                                                                           dict[rule].push(set[i]);
+                                                                  }else{
+                                                                      if (dict[uri] == undefined)
+                                                                           dict[uri] =[set[i]]; 
+                                                                      else
+                                                                           dict[uri].push(set[i]);
+                                                                  }
+                                                            }
+                                                            return [ruleNr, dict];
+                                                      }
+
+			function buildModel(list,eraseList) {
+				var iterator  = list.iterator();
+				var statement = null;
+				var subject,predicate,object;
+				var list = null;
+				netscape.security.PrivilegeManager.enablePrivilege("UniversalXPConnect");
+				while (iterator.hasNext()) {
+					statement = iterator.next();
+					if (statement instanceof Statement) {
+						subject   = statement.getSubject().getURI();
+						predicate = statement.getPredicate().getURI();
+						object    = statement.getObject().getURI();
+						if ( object.indexOf("Seq") > -1 ) {
+							application.RDFTools.createList(auxDS,application.RDFTools.getResource(subject));
+							//application.RDFTools.createContainer(auxDS.getData(),application.RDFTools.getResource(subject));
+						} else {
+							if (predicate.indexOf("ns#_") > -1 ) {
+								list = new jsIRDFList(application.RDFTools.getResource(subject));
+								list.init(auxDS);
+								list.insertElement(application.RDFTools.getResource(object));
+								//application.RDFTools.appendChild(auxDS.getData(),application.RDFTools.getResource(subject),application.RDFTools.getResource(object));
+							} else {
+								auxDS.getData().Assert(application.RDFTools.getResource(subject),application.RDFTools.getResource(predicate),application.RDFTools.getResource(object),true);
+							}
+						}
+					}
+				}
+				iterator = eraseList.iterator();
+				while (iterator.hasNext()) {
+					statement = iterator.next();
+					subject   = statement.getSubject().getURI();
+					predicate = statement.getPredicate().getURI();
+					object    = statement.getObject().getURI();
+					auxDS.getData().Unassert(application.RDFTools.getResource(subject),application.RDFTools.getResource(predicate),application.RDFTools.getResource(object),true);
+				}
+			}
+			var ps = new DataSource();
+			var req = null;
+			function _ps_load() {
+				var s = req.responseText;
+				alert(s);
+				ps.parse(s);
+				application.mnglog.debug(ps.serialize());
+			} 
+			
+			
+			function testlist() {
+				req = new XMLHttpRequest();
+				req.open("GET","/clerk/tests/cases/eulermoz/tests/swrl-test/lists.rdf");
+				req.onload = _ps_load;
+				req.send(null);
+				
+			}
+		]]>
+	</xul:script>
+	<xul:vbox flex="1">
+		<xul:hbox flex="1">
+			<xul:groupbox flex="1">
+				<xul:caption label="N3 Scanner sample"/>
+				<xul:grid flex="1">
+					<xul:columns>
+						<xul:column flex="1"/>
+						<xul:column flex="1"/>
+					</xul:columns>
+					<xul:rows>
+						<xul:row>
+							<xul:label value="N3 Parser" style="font-weight:bold;color:#0066CC;"/>
+							<xul:label value="State: ready" style="font-weight:bold;color:#0066CC;" id="state"/>
+						</xul:row>
+						<xul:row>
+							<xul:button label="load file to parse"   oncommand="doMain()"/>
+						</xul:row>
+						<xul:row flex="1">
+							<xul:textbox multiline="true" value="" id="resultsText" flex="1"/>
+							<xul:button label="testit" oncommand="testlist()"/>
+						</xul:row>
+					</xul:rows>
+				</xul:grid>
+			</xul:groupbox>
+		</xul:hbox>
+	</xul:vbox>
+</xul:window>

@@ -1,0 +1,6 @@
+List of things todo
+====================
+
+* make a general parameter file
+
+* save and restore the current screen ? ??

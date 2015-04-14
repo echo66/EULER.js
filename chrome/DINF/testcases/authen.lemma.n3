@@ -1,0 +1,10 @@
+# $Id: authen.lemma.n3,v 1.1 2005/02/23 22:14:07 naudts Exp $
+
+@prefix log: <http://www.w3.org/2000/10/swap/log#>.
+@prefix : <authen#>.
+
+<mailto:jos.deroo.jd@belgium.agfa.com> :authenticated ?who.
+# ?who :authenticated <mailto:w3c-ac-forum@w3.org/>.
+
+
+

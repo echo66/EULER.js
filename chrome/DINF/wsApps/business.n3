@@ -1,0 +1,32 @@
+# business example Guido Naudts 03/2/2010
+# about some distances between belgium cities
+
+@prefix : <http://test#>.
+@prefix math: <http://www.w3.org/2000/10/swap/math#>.
+@prefix log: <http://www.w3.org/2000/10/swap/log#>.
+
+# rules
+
+{?client :hasTotal ?total.
+ ?total math:greaterThan "10000"} => {
+ ?client :status :specialClient}.
+
+{?client :status :specialClient.
+ ?client :anciennity ?anciennity.
+ ?anciennity math:greaterThan "5"} => {
+ ?client :hasReduction "5"}.
+
+{?client :anciennity ?anciennity.
+ ?anciennity math:greaterThan "3"} => {
+ ?client :hasReduction "2"}.
+
+# data
+
+:John :hasTotal "22356".
+:Frank :hasTotal "7847".
+:Peter :hasTotal "11344".
+
+:Frank :anciennity "6".
+:John :anciennity  "7".
+:Peter :anciennity "2".
+

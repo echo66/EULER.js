@@ -1,0 +1,18 @@
+# $Id: gedcom-simple.n3,v 1.1 2005/02/23 22:14:07 naudts Exp $
+
+@prefix gc: <http://www.daml.org/2001/01/gedcom/gedcom#>.
+@prefix log: <http://www.w3.org/2000/10/swap/log#>.
+@prefix : <gedcom#>.
+
+:Guido gc:childIn :Naudts; gc:sex :M.
+:Martha gc:spouseIn :Naudts; gc:sex :F.
+:Pol gc:spouseIn :Naudts; gc:sex :M.
+
+:Jan gc:childIn :Huybrechs; gc:sex :M.
+:Isa gc:spouseIn :Huybrechs; gc:sex :F.
+:Fons gc:spouseIn :Huybrechs; gc:sex :M.
+
+:Martha gc:childIn :Huybrechs_bomma; gc:sex :F.
+:Isa gc:childIn :Huybrechs_bomma; gc:sex :F.
+:bomma_Huybrechs gc:spouseIn :Huybrechs_bomma; gc:sex :F.
+:bompa_Huybrechs gc:spouseIn :Huybrechs_bomma; gc:sex :M.

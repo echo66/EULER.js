@@ -1,0 +1,131 @@
+# $Id: gedcom-simple.n3,v 1.1 2005/02/23 22:14:07 naudts Exp $
+
+@prefix gc: <http://www.daml.org/2001/01/gedcom/gedcom#>.
+@prefix log: <http://www.w3.org/2000/10/swap/log#>.
+@prefix : <http://www.daml.org/2001/01/gedcom/gedcom#>.
+@prefix ont: <http://www.daml.org/test#>.
+
+:Guido_Naudts gc:spouseIn :Naudts_Guido; gc:sex :M.
+:Christine_Vannoten gc:spouseIn :Naudts_Guido; gc:sex :F.
+:Frank_Naudts gc:childIn :Naudts_Guido; gc:sex :M.
+:Wim_Naudts gc:childIn :Naudts_Guido; gc:sex :M.
+
+:Ludo_Naudts gc:spouseIn :Naudts_Ludo; gc:sex :M.
+:Karine_Thys gc:spouseIn :Naudts_Ludo; gc:sex :F.
+:Stefaan_Naudts gc:childIn :Naudts_Ludo; gc:sex :M.
+
+:Jan_Naudts gc:spouseIn :Naudts_Jan; gc:sex :M.
+:Michel_DeSmedt gc:spouseIn :Naudts_Jan; gc:sex :F.
+:Bart_Naudts gc:childIn :Naudts_Jan; gc:sex :M.
+:Wim2_Naudts gc:childIn :Naudts_Jan; gc:sex :M.
+:Annelies_Naudts gc:childIn :Naudts_Jan; gc:sex :F.
+
+:Bart_Naudts gc:spouseIn :Naudts_Bart; gc:sex :M.
+:Klaas_Naudts gc:childIn :Naudts_Bart; gc:sex :M.
+:Merel_Naudts gc:childIn :Naudts_Bart; gc:sex :F.
+
+
+:Peter_Naudts gc:spouseIn :Naudts_Peter; gc:sex :M.
+:Marianne_Coppens gc:spouseIn :Naudts_Peter; gc:sex :F.
+:Jef_Naudts gc:childIn :Naudts_Peter; gc:sex :M.
+:Hans2_Naudts gc:childIn :Naudts_Peter; gc:sex :M.
+:Sophie_Naudts gc:childIn :Naudts_Peter; gc:sex :F.
+
+:Eric_Naudts gc:spouseIn :Naudts_Eric; gc:sex :M.
+:Pinoe_Robbrecht gc:spouseIn :Naudts_Eric; gc:sex :F.
+:Raf_Naudts gc:childIn :Naudts_Eric; gc:sex :M.
+:Benjamin_Naudts gc:childIn :Naudts_Eric; gc:sex :M.
+:Sara_Naudts gc:childIn :Naudts_Eric; gc:sex :F.
+
+:Mon_Nys gc:spouseIn :Nys_Mon; gc:sex :M.
+:Marleen_Naudts gc:spouseIn :Nys_Mon; gc:sex :F.
+:Ellen_Nys gc:childIn :Nys_Mon; gc:sex :F.
+:Liesbeth_Nys gc:childIn :Nys_Mon; gc:sex :F.
+
+
+:Jan_Naudts  gc:childIn :Naudts_Pol; gc:sex :M.
+:Guido_Naudts gc:childIn :Naudts_Pol; gc:sex :M.
+:Ludo_Naudts gc:childIn :Naudts_Pol; gc:sex :M.
+:Peter_Naudts  gc:childIn :Naudts_Pol; gc:sex :M.
+:Marleen_Naudts gc:childIn :Naudts_Pol; gc:sex :F.
+:Eric_Naudts  gc:childIn :Naudts_Pol; gc:sex :M.
+:Lutgard_Naudts  gc:childIn :Naudts_Pol; gc:sex :F.
+:Rita_Naudts gc:childIn :Naudts_Pol; gc:sex :F.
+
+:Martha_Huybrechs gc:spouseIn :Naudts_Pol; gc:sex :F.
+:Pol_Naudts gc:spouseIn :Naudts_Pol; gc:sex :M.
+
+:Bruno gc:childIn :Huybrechs_Fons; gc:sex :M.
+:Jan gc:childIn :Huybrechs_Fons; gc:sex :M.
+:Isa_Huybrechs gc:spouseIn :Huybrechs_Fons; gc:sex :F.
+:Fons gc:spouseIn :Huybrechs_Fons; gc:sex :M.
+
+:Martha_Huybrechs gc:childIn :Huybrechs_bomma; gc:sex :F.
+:Isa_Huybrechs gc:childIn :Huybrechs_bomma; gc:sex :F.
+:bomma_Huybrechs gc:spouseIn :Huybrechs_bomma; gc:sex :F.
+:bompa_Huybrechs gc:spouseIn :Huybrechs_bomma; gc:sex :M.
+
+{?child gc:childIn ?family. ?parent gc:spouseIn ?family} log:implies {?child gc:parent ?parent}.
+
+{?child gc:parent ?parent. ?parent gc:sex :M} log:implies {?child gc:father ?parent}.
+
+{?child gc:parent ?parent. ?parent gc:sex :F} log:implies {?child gc:mother ?parent}.
+
+{?child gc:parent ?parent} log:implies {?parent gc:child ?child}.
+
+{?child gc:parent ?parent. ?child gc:sex :M} log:implies {?parent gc:son ?child}.
+
+{?child gc:parent ?parent. ?child gc:sex :F} log:implies {?parent gc:daughter ?child}.
+
+{?child gc:parent ?parent. ?parent gc:parent ?grandparent} log:implies {?child gc:grandparent ?grandparent}.
+
+{?child gc:grandparent ?grandparent. ?grandparent gc:sex :M} log:implies {?child gc:grandfather ?grandparent}.
+
+{?child gc:grandparent ?grandparent. ?grandparent gc:sex :F} log:implies {?child gc:grandmother ?grandparent}.
+
+{?child gc:grandparent ?grandparent} log:implies {?grandparent gc:grandchild ?child}.
+
+{?child gc:grandparent ?grandparent. ?child gc:sex :M} log:implies {?grandparent gc:grandson ?child}.
+
+{?child gc:grandparent ?grandparent. ?child gc:sex :F} log:implies {?grandparent gc:granddaughter ?child}.
+
+{ ?child1 gc:childIn ?family. ?child2 gc:childIn ?family. ?child1 log:notEqualTo ?child2.} log:implies {?child1 gc:sibling ?child2}.
+
+{?child2 gc:sibling ?child1. ?child2 log:notEqualTo ?child1} log:implies {?child1 gc:sibling ?child2}.
+
+{?child gc:sibling ?sibling. ?sibling gc:sex :M} log:implies {?child gc:brother ?sibling}.
+
+{?child gc:sibling ?sibling. ?sibling gc:sex :F} log:implies {?child gc:sister ?sibling}.
+
+{ ?spouse1 gc:spouseIn ?family. ?spouse2 gc:spouseIn ?family. ?spouse1 log:notEqualTo ?spouse2.} log:implies {?spouse1 gc:spouse ?spouse2}.
+
+{?spouse2 gc:spouse ?spouse1. ?spouse2 log:notEqualTo ?spouse1} log:implies {?spouse1 gc:spouse ?spouse2}.
+
+{?spouse gc:spouse ?husband. ?husband gc:sex :M} log:implies {?spouse gc:husband ?husband}.
+
+{?spouse gc:spouse ?wife. ?wife gc:sex :F} log:implies {?spouse gc:wife ?wife}.
+
+{?child gc:parent ?parent. ?parent gc:brother ?uncle} log:implies {?child gc:uncle ?uncle}.
+
+{?child gc:aunt ?aunt. ?aunt gc:spouse ?uncle} log:implies {?child gc:uncle ?uncle}.
+
+{?child gc:parent ?parent. ?parent gc:sister ?aunt} log:implies {?child gc:aunt ?aunt}.
+
+{?child gc:uncle ?uncle. ?uncle gc:spouse ?aunt} log:implies {?child gc:aunt ?aunt}.
+
+{?parent gc:daughter ?child. ?parent gc:sibling ?sibling} log:implies {?sibling gc:niece ?child}.
+
+{?parent gc:son ?child. ?parent gc:sibling ?sibling} log:implies {?sibling gc:nephew ?child}.
+
+{?cousin1 gc:parent ?sibling1. ?cousin2 gc:parent ?sibling2. ?sibling1 gc:sibling ?sibling2.
+ ?cousin1 log:notEqualTo ?cousin2. ?sibling1 log:notEqualTo ?sibling2} log:implies {?cousin1 gc:firstCousin ?cousin2}.
+
+{?child gc:parent ?parent} log:implies {?child gc:ancestor ?parent}.
+
+{?child gc:parent ?parent. ?parent gc:ancestor ?ancestor} log:implies {?child gc:ancestor ?ancestor}.
+
+{?child gc:ancestor ?ancestor} log:implies {?ancestor gc:descendent ?child}.
+
+{?sibling1 gc:sibling ?sibling2. ?sibling1 gc:descendent ?descendent1. ?sibling2 gc:descendent ?descendent2.
+  ?sibling1 log:notEqualTo ?sibling2. ?descendent1 log:notEqualTo ?descendent2} log:implies {?descendent1 gc:cousin ?descendent2}.
+

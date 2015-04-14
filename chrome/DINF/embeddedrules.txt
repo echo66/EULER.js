@@ -1,0 +1,28 @@
+Embedded rules - example
+=====================================
+
+Suppose a robot who must place coloured cubes in towers of two. For doing that the robot has a set of rules, determining which coluour must be put on which colour. One "hypothetical rule" is a s follows:
+{{:under :colour :yellow} =>{:above :colour :black}. {:under :colour :red} => {:above :colour :blue}} =>
+{{:under :colour :white} => {:above :colour :red}}.
+
+The emaning in natural language:
+if it follows from the rules that the colour of the lowest cube is yellow, then the colour of the upper cube must be black and if the colour of the lowest cube is black then the colour of the upper cube must be red;
+then if the colour of the lowest cube is white then the colour of the upper cube must be red.
+Whether this rule can be applied or not is dependent on the other rules hence a "hypothetical rule". 
+
+So when the rule set contains the two rules:
+{:under :colour :yellow} =>{:above :colour :black}.
+ {:under :colour :red} => {:above :colour :blue}.
+the rule above can be applied, but also when it contains:
+{:under :colour :yellow}=>{:state a "2"}.
+{:state a "2"} => {:above :colour :black}.
+{:under :colour :red}=>{:state a "1"}.
+{:state a "1"} => {:above :colour :blue}.
+
+So the interpetation of an embedded rule in backward reasoning:
+push the rule on the stack. keep the antecedents in a list (called embeddedList) ;(consider the items in this list to be temporary data that must disappear when matched with a goal); put the consequents in the goallist. A solution is only found when the temporary list is empty.
+ Match the consequents;  when the antecedents (after substitution) appear in the goallist, the rule has been "proved".
+A rule in the embeddedList i.e. an embedded rule within an embedded rule should be treated in the same way.
+
+A rule in the consequents is different. Consequents are 'proved' when the antecedents are proved: so a rule in the consequents is then a proved rule and should be added in a provedRules list. When matching a goal this goal should be matched also against this provedRules list. 
+embeddedList and provedRules list should be backtracked i.e. put on the stack!!! Best to make a different stack.

@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/css" href="chrome://global/skin"?>
+<!DOCTYPE xul:window [
+	<!ENTITY rdf 'http://www.w3.org/1999/02/22-rdf-syntax-ns#'>
+	<!ENTITY sample  "http://www.sampleurl.org/rdfs/sample#">
+]>
+<xul:window
+	xmlns = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+	xmlns:xul    = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+	xmlns:sample = "&sample;"
+        xmlns:html="http://www.w3.org/1999/xhtml"  
+	xmlns:rdf    = "&rdf;">
+        <xul:script language="javascript1.5" src="XULInterface.js"/> 
+        <xul:script language="javascript1.5" src="interface.js"/>
+        <xul:script language="javascript1.5" src="RDFUnify.js"/>
+        <xul:script language="javascript1.5" src="RDFEngine.js"/>
+        <xul:script language="javascript1.5" src="Jsengine.js"/>
+        <xul:script language="javascript1.5" src="gedcom-simple.js"/>
+        <xul:script language="javascript1.5" src="Utils.js"/>
+        <xul:script language="javascript1.5" src="Builtins.js"/>
+        <xul:script language="javascript1.5" src="Forward.js"/> 
+        <xul:script language="javascript1.5" src="N3EParser.js"/>        
+	<xul:script language="javascript1.5" src="../js/utils/var.js"/>
+	<xul:script language="javascript1.5" src="../js/utils/util.js"/>
+	<xul:script language="javascript1.5" src="../js/utils/debug.js"/>
+	<xul:script language="javascript1.5" src="../js/utils/jsConsoleAppender.js"/>
+	<xul:script language="javascript1.5" src="../js/model/jsIRDFListUtils.js"/>
+	<xul:script language="javascript1.5" src="../js/model/jsIRDFListEnumerator.js"/>
+	<xul:script language="javascript1.5" src="../js/model/jsIRDFList.js"/>
+	<xul:script language="javascript1.5" src="../js/model/RDFTools.js"/>
+	<xul:script language="javascript1.5" src="../js/model/DataSource.js"/>
+
+  <xul:script language="javascript1.5">
+		<![CDATA[
+/** Test module
+  * Author: Guido J.M. Naudts Bouwel
+  */
+
+
+/** Init log manager and RDFTools **/
+netscape.security.PrivilegeManager.enablePrivilege("UniversalXPConnect"); 
+/** Init log manager and RDFTools **/
+JsConsoleAppender.init();
+Log.init();
+
+var tools = new RDFUtils();			
+
+function execTestcase(){
+    var ds = openFile();
+    var triplelist = sampleGetAllTriples(ds);
+    print(triplesetToString(triplelist) + "\n");        
+}
+
+function execTestcase1(){
+    var ret = openN3File();
+    var path = ret[0];
+    var filename = ret[1];
+    print("path = " + path + " filename = " + filename + "\n");
+    N3ToRDF(path, filename); 
+}
+
+function RDFToN3(path, filename){
+    var ds = new DataSource();
+    var data = readAFile(path, filename);
+    ds.parse(data);
+    return sampleGetAllTriples(ds);
+} 
+
+function N3ToRDF(path, filename){
+   var n3Parser = new N3EParser();
+   var inf = new infData([]);
+   var ret = getRDFDB(path, filename, inf, n3Parser);
+   // infData object is not needed; retain tripleset
+   var ts = ret[0];
+   print("Parsed triples = \n" + ts + "\n\n");
+   var triple;
+   var ds = new DataSource();
+   var sout = "";
+   for (var i = 0; i < ts.length; i++){
+      triple = ts[i];
+      if (triple.getType() != "r"){
+          print("triple = " + triple + "\n");
+          insertTripleInDatasource(ds, triple.subject.uri, triple.property.uri, triple.object.uri);
+      }else{
+          
+   } 
+   var s = ds.serialize();
+   print(s + "\n");
+}
+
+function insertTripleInDatasource(datasource, strSubject, strPredicate, strObject){
+        // Author: Antonio Sanchez
+	var rsSubject    = null;
+	var rsPredicate  = null;
+	var ukObject     = null;
+	var objectMode   = "asResource";
+	try {
+		if (application.isNull(strSubject) || application.isNull(strPredicate) || application.isNull(strObject))
+                                   throw "Not enough parameters to create a triple"; 
+		// In order to create a triple is needed an XPCOM Object for subject, predicate and object. 
+                // In addition the "object" can be a RDF Resource or a RDF Literal.
+        	// with RDFTools we can get the correct XPCOM Object for subject, predicate, and object. 
+		rsSubject   = tools.getResource(strSubject); // Returns a XPCOM nsIRDFResource
+		rsPredicate = tools.getResource(strPredicate);
+		if (objectMode == "asResource") ukObject = tools.getResource(strObject);
+			else ukObject = tools.getLiteral(strObject); // Returns a XPCOM nsIRDFLiteral
+					
+		//Now creating a triple in datasource;
+		datasource.setTriple(rsSubject,rsPredicate,ukObject);
+	} catch(ex) {
+		alert("insertTripleOnDatasource:  " + ex);
+	}
+}
+
+/**
+ * openFile Author: Antonio Sanchez
+ **/
+			 
+function openFile() {
+   var nsIFilePicker = null;
+   var myFilePicker  = null;
+   var fileOk        = null;
+   var currentFile   = null;
+   var fileString    = null;
+   var mUri          = null;
+   var fChannel      = null;
+   var mInputStream  = null;
+   var newSession    = null;
+   var ds = new DataSource();
+   try {
+	netscape.security.PrivilegeManager.enablePrivilege("UniversalXPConnect");
+	nsIFilePicker = Components.interfaces.nsIFilePicker;
+	myFilePicker  = Components.classes["@mozilla.org/filepicker;1"].createInstance(nsIFilePicker);
+	myFilePicker.init(window,"Select an RDF to load",0);
+	myFilePicker.appendFilter("rdf files","*.rdf");
+	fileOk = myFilePicker.show();
+	if (fileOk == nsIFilePicker.returnOK) {
+		currentFile = myFilePicker.file;
+                print("currentFile: " + currentFile + "\n");
+		mURI = JS_FILE_IOSERVICE.newFileURI(currentFile);
+                print ("mURI = " + mURI + "\n");
+		fChannel = JS_FILE_IOSERVICE.newChannelFromURI(mURI);
+		mInputStream = new JS_FILE_InputStream();
+		mInputStream.init(fChannel.open());
+		fileString = mInputStream.read(currentFile.fileSize);
+		mInputStream.close();
+       		ds.parse(fileString); // calling datasource API to load the data in datasource
+	}
+        return ds;
+    } catch(ex) {
+	alert("openFile:" + ex);
+        return null; 
+    }
+}
+
+/**
+ * openFile N3
+ **/
+			 
+function openN3File() {
+   var nsIFilePicker = null;
+   var myFilePicker  = null;
+   var fileOk        = null;
+   var currentFile   = null;
+   var path;
+   try {
+	netscape.security.PrivilegeManager.enablePrivilege("UniversalXPConnect");
+	nsIFilePicker = Components.interfaces.nsIFilePicker;
+	myFilePicker  = Components.classes["@mozilla.org/filepicker;1"].createInstance(nsIFilePicker);
+	myFilePicker.init(window,"Select an N3 to load",0);
+	myFilePicker.appendFilter("N3 files","*.n3");
+	fileOk = myFilePicker.show();
+	if (fileOk == nsIFilePicker.returnOK) {
+		currentFile = myFilePicker.file;
+                path = currentFile.path;
+                var i = path.lastIndexOf("\\");
+                var filepath = path.substring(0, i+1);
+                var filename = path.substring(i+1, path.length);
+                return [filepath, filename];
+	}
+    } catch(ex) {
+	alert("openFile:" + ex);
+        return []; 
+    }
+}
+
+
+/**
+ * sampleGetAllTriples Author:Antonio Sanchez
+ **/
+ 
+function sampleGetAllTriples(ds) {
+ 	var res = null;
+	var str = "";
+	var i   = 0;
+	var strSubject = null;
+	var strPred    = null;
+	var strObject  = null;
+        var list = [];
+	try {
+		netscape.security.PrivilegeManager.enablePrivilege("UniversalXPConnect");
+		res = ds.getAllTriples();
+		for ( i = 0; i < res.length; i++) {
+			strSubject = tools.resource2str(res[i].subject);
+			strPred    = tools.resource2str(res[i].predicate);
+			if (res[i].object instanceof Components.interfaces.nsIRDFResource)
+                                      strObject = tools.resource2str(res[i].object);
+			else strObject = tools.literal2str(res[i].object);
+                        //print("subject = " + strSubject + " property = " + strPred + " object = " + strObject + "\n");
+                        list.push(new cTriple(strSubject, strPred, strObject)); 
+                }              
+	} catch(ex) {
+		alert("sampleGetAllTriples: " + ex);
+	}
+        return list; 
+}
+
+ ]]>
+  </xul:script>
+ <xul:vbox flex="1">
+   <xul:button label="exec testcase" style="color: blue;" oncommand="execTestcase()"/>
+   <xul:button label="exec testcase1" style="color: red;" oncommand="execTestcase1()"/>
+   <xul:textbox multiline="true" value="" id="resultsText" flex="1.0"/>
+ </xul:vbox>
+</xul:window>

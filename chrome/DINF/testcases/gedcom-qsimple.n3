@@ -1,0 +1,12 @@
+# $Id: gedcom-qsimple.n3,v 1.1 2005/02/23 22:14:07 naudts Exp $
+
+# PxButton | test | java Euler -twice gedcom-relations.n3 gedcom-facts.n3 owl-rules.n3 gedcom-query.n3 |
+# PxButton | cwm | cwm gedcom-relations.n3 gedcom-facts.n3 owl-rules.n3 --think |
+
+@prefix log: <http://www.w3.org/2000/10/swap/log#>.
+@prefix ont: <http://www.daml.org/2001/03/daml+oil#> .
+@prefix gc: <http://www.daml.org/2001/01/gedcom/gedcom#>.
+@prefix : <gedcom#>.
+
+?who gc:grandfather ?who1. 
+#?who gc:grandmother ?who1.

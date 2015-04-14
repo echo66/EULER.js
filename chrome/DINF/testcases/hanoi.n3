@@ -1,0 +1,20 @@
+@keyword.
+{(axiom.log:semantics query.log:semantics)
+                                       log:conjunction ?f.
+
+"@keyword.
+{("\nMove topmost disc from " ?A.log:uri " to " ?B.log:uri) 
+string:concatenation s. "a" log:stringOutput s.} => {?A move ?B}.
+{?A move ?B} => {[transfer "1"; peg1 ?A; peg2 ?B; peg3 ?I]}.
+[transfer "0"; peg1 ?A; peg2 ?B; peg3 ?I].
+{(?N "1") math:difference ?M.
+[transfer ?M; peg1 ?A; peg2 ?I; peg3 ?B].
+A move B.
+[transfer ?M; peg1 ?I; peg2 ?B; peg3 ?A].}
+=> {[transfer ?N; peg1 ?A; peg2 ?B; peg3 ?I].}."
+log:parsedAsN3 axiom.
+                                                                                                                                                                                                     A; peg2 ?B; peg3 ?I].
+"[transfer 3; peg1 A; peg2 B; peg3 I]."
+log:parsedAsN3 query.
+
+?f log:conclusion ?g.

@@ -1,0 +1,18 @@
+# test of procedure format for N3 -- G.Naudts 19/2/2005
+
+@prefix log: <http://www.w3.org/2000/10/swap/log#>.
+@prefix math: <http://www.w3.org/2000/10/swap/math#>.
+@prefix : <proctest3#>.
+@prefix proc: <proctest#>.
+
+# calculate n! res must be 1 when called
+:factorial proc:variables (?n ?res);
+    proc:proc {
+          { ?n math:greaterThan "1".
+           (?n "-1") math:sum ?y.
+           :factorial proc:call (?y ?z).
+           (?z ?n) math:product ?res} 
+           => {[:result ?res]}.
+           {?n math:equalTo "1"} => {[:result "1"] }};
+    proc:query {[:result ?res]}.
+         

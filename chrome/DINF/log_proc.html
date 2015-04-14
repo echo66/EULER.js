@@ -1,0 +1,137 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<!-- Created on 18-févr.-2005 13:54:54 -->
+
+<html>
+   <head>
+      <title>
+         logic procedures
+      </title>
+      <meta name="GENERATOR" content="Arachnophilia 5.2">
+      <meta name="FORMATTER" content="Arachnophilia 5.2">
+   </head>
+
+   <body bgcolor="#ffffff" text="#000000" link="#0000ff" vlink="#800080" alink="#ff0000">
+      <b><u>A proposal for the use of procedures in logic programming using Notation 3</u></b>
+      <pre>
+      Author: Guido Naudts Bouwel
+      
+      The proposal intends to introduce procedures with variable replacement in logic
+       programming while at the same time enhancing the efficiency of inferencing 
+       and the modularity of the programming.
+       
+      <b><u>Syntax</u></b>
+
+          The namespace proc: used is defined as:
+          @prefix proc: &lt;proctest#&gt;.
+      
+          Syntax of procedure declaration:
+          
+          &lt;myproc&gt; proc:variables (?x1 ?x2 ... ?xn);
+               proc:proc {a_tripleset}; proc:query {a_tripleset}.
+               
+          Syntax of procedure call:
+          
+          &lt;myproc&gt; proc:call (?a ?b ... ?q).
+          
+          The intention is that the proc:call variables list is substituted in sequence for the
+          proc:variables list in the procedure declaration. Then the query is used together with the 
+          initial substitution for inferencing with the tripleset defined after proc:proc.
+          The result (there can be more than one) is a list of substitutions or a failure (could be 
+          indicated by an empty list).
+          The examples will clarify the intended result.
+          This definition is such that as well backward as forward reasoning can be used. 
+          This could be indicated by a parameter eg proc:method "backward".
+          The proc:query could be omitted but only with forward reasoning; this is why I did not select
+          this.
+          
+     <b><u>Examples:</u></b>
+         
+         1)
+         
+         Procedure:
+         
+         :cube proc:variables (?a ?b); 
+            proc:proc { {(?a ?a) math:product ?b1} => {[:result ?b1]}};
+            proc:query {[:result ?b]}.
+         
+         Procedure call:
+         
+         # ?z should become "16".
+         :cube proc:call ("4" ?z).
+         
+         2)
+         
+         Procedure:
+         
+         # calculate ax + b
+         :line proc:variables (?a ?b ?x ?z);
+            proc:proc {
+                {(?a ?x) math:product _:y.
+                (_:y ?b) math:sum ?z1.} => {[:result ?z1]}};
+            proc:query {[:result ?z]}.
+         
+         Procedure call:
+         
+         # following should return "13" for ?z.
+         :line proc:call ("2" "3" "5" ?z).
+         
+         In a rule (example, not implemented):
+         
+         {[:displacement ?b].:line proc:call ("2" "3" ?b ?z). ?z math:greaterThan "20".} =>
+             {[:alert "The maximum value has been reached."]}.        
+             
+          3)An example with a recurrent call
+          
+          Procedure:
+          
+          # calculate n! res must be "1" when called
+          :factorial proc:variables (?n ?res);
+          proc:proc {
+             { ?n math:greaterThan "1".
+              (?n "-1") math:sum ?y.
+              :factorial proc:call (?y ?z).
+              (?z ?n) math:product ?res} 
+              => {[:result ?res]}.
+              {?n math:equalTo "1"} => {[:result "1"] }};
+          proc:query {[:result ?res]}.   
+          
+          Procedure call:
+          
+          # following should return 24 = 4! for ?result.
+          :factorial proc:call ("4" ?result).
+
+         <b><u>Advantages:</u></b>
+         
+         * inferencing on small sets of data and rules
+         * procedures with variable replacement
+         * modularity
+         * ease of use
+         * still logical programming (neverwhere any order (sequence) of triples)
+         * together with proc:semantics a library of modules containing
+           many procedures can be made.
+           
+         <b>Caveat</b>  
+         The procedure variables must be global variables within the procedure, but
+         unknown outside the procedure. If two rules within the same procedure use the same variable
+         the name of that variable should not become different in the two rules because
+         of variable renumbering. I use the variable prefix "_:" for that.
+           
+         <b><u>Feasability</u></b>    
+         
+         A demonstration of the above three testcases can be found on:
+         http://cvs.sourceforge.net/viewcsv.py/eulermoz/eulermoz/rdftest
+         An explanation of the program is found in mozengine.html.
+         Download and double click on testInf.xul and then select testcases proctest, proctest2 and proctest3.
+         The directory testcases must be a subdirectory of rdftest.
+           
+         <b><u>Correctness</u></b>  
+         
+         The procedure call is really a subinferencing process with exactly the same characteristics as 
+         the main process (same definition of input, same definition of output). In fact the same modules 
+         are used (JsEngine.js and Forward.js) so the logic characteristics are identical. 
+           
+        </pre>   
+
+   </body>
+</html>

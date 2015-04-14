@@ -1,0 +1,20 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
+@prefix owl: <http://www.w3.org/2002/07/owl#>.
+@prefix : <http://eulermoz/parameter#>.
+[ a :parameter; :hasName "query0"; :hasValue "@prefix gc: <http://www.daml.org/2001/01/gedcom/gedcom#>.
+@prefix log: <http://www.w3.org/2000/10/swap/log#>.
+@prefix : <http://www.daml.org/2001/01/gedcom/gedcom#>.
+@prefix ont: <http://www.daml.org/test#>.
+
+?s ?p ?o." ].[ a :parameter; :hasName "query1"; :hasValue "@prefix gc: <http://www.daml.org/2001/01/gedcom/gedcom#>.
+@prefix log: <http://www.w3.org/2000/10/swap/log#>.
+@prefix : <http://www.daml.org/2001/01/gedcom/gedcom#>.
+@prefix ont: <http://www.daml.org/test#>.
+
+?s gc:parent ?o." ].[ a :parameter; :hasName "query2"; :hasValue "@prefix gc: <http://www.daml.org/2001/01/gedcom/gedcom#>.
+@prefix log: <http://www.w3.org/2000/10/swap/log#>.
+@prefix : <http://www.daml.org/2001/01/gedcom/gedcom#>.
+@prefix ont: <http://www.daml.org/test#>.
+
+?s gc:aunt ?o." ].

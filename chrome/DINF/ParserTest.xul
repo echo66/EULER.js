@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/css" href="chrome://global/skin"?>
+<!DOCTYPE xul:window [
+	<!ENTITY rdf 'http://www.w3.org/1999/02/22-rdf-syntax-ns#'>
+	<!ENTITY sample  "http://www.sampleurl.org/rdfs/sample#">
+]>
+<xul:window
+    onclose="stop()"
+    title="Xul Client"
+    xmlns = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+	xmlns:xul    = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+	xmlns:sample = "&sample;"
+        xmlns:html="http://www.w3.org/1999/xhtml"
+	xmlns:rdf    = "&rdf;">
+    <xul:script language="javascript1.7" src="N3EParser.js"/>
+    <xul:script language="javascript1.7" src="Utils.js"/>
+    <xul:script language="javascript1.7" src="interface.js"/>    
+
+    <xul:script language="javascript1.7">
+		<![CDATA[
+	/**
+	  * Author: Guido J.M. Naudts Bouwel
+      */	 
+	function test(){
+		parser = new N3EParser();
+		parser.testParseLongComment();
+    }
+
+    function print(text){
+       document.getElementById('resultsText').value =
+           document.getElementById('resultsText').value + text + "\n";
+
+    }
+]]>
+</xul:script>
+
+<hbox>
+  <vbox>
+  <vbox>
+      <button label="Start" oncommand="test();"/>
+  </vbox>
+      <xul:textbox multiline="true" style="min-width: 300px;min-height: 300px;" value="" id="resultsText" flex="1.0"/>
+  </vbox>
+</hbox>
+</xul:window>
+

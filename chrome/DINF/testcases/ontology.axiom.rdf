@@ -1,0 +1,45 @@
+
+<!-- Processed by Id: cwm.py,v 1.82 2001/11/15 22:11:23 timbl Exp -->
+<!--     using base file:/Python22/cwm/ontology.axiom.n3-->
+
+
+<rdf:RDF xmlns="file:/Python22/cwm/ontology#"
+    xmlns:log="http://www.w3.org/2000/10/swap/log#"
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    xmlns:rdfs="file:/Python22/cwm/test#">
+
+    <rdf:Description rdf:about="#insectivora">
+        <rdfs:subClassOf rdf:resource="#mammalia"/>
+    </rdf:Description>
+
+    <rdf:Description rdf:about="#mammalia">
+        <rdfs:subClassOf rdf:resource="#vertebrae"/>
+    </rdf:Description>
+
+    <rdf:Description rdf:about="#spitsmuis">
+        <rdfs:subClassOf rdf:resource="#insectivora"/>
+        <rdf:Description>
+            <log:is rdf:parseType="log:Quote">
+                <rdf:Description>
+                    <log:is rdf:parseType="log:Quote">
+                        <rdf:Description rdf:about="#c1">
+                            <rdfs:subClassOf rdf:resource="#c2"/>
+                        </rdf:Description>
+                        <rdf:Description rdf:about="#c2">
+                            <rdfs:subClassOf rdf:resource="#c3"/>
+                        </rdf:Description>
+                    </log:is>
+                    <log:implies rdf:parseType="log:Quote">
+                        <rdf:Description rdf:about="#c1">
+                            <rdfs:subClassOf rdf:resource="#c3"/>
+                        </rdf:Description>
+                    </log:implies>
+                </rdf:Description>
+            </log:is>
+            <rdf:type rdf:resource="http://www.w3.org/2000/10/swap/log#Truth"/>
+            <log:forAll rdf:resource="#c1"/>
+            <log:forAll rdf:resource="#c2"/>
+            <log:forAll rdf:resource="#c3"/>
+        </rdf:Description>
+    </rdf:Description>
+</rdf:RDF>

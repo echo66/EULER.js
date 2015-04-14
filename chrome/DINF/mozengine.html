@@ -1,0 +1,92 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<!-- Created on 27-janv.-2005 14:14:28
+ Author: Guido J.M. Naudts Bouwel
+-->
+
+<html>
+   <head>
+      <title>
+         Mozilla Inference Engine
+      </title>
+      <meta name="GENERATOR" content="Arachnophilia 5.2">
+      <meta name="FORMATTER" content="Arachnophilia 5.2">
+   </head>
+
+   <body bgcolor="#ffffff" text="#000000" link="#0000ff" vlink="#800080" alink="#ff0000">
+   <i><b>Mozilla inference engine</b></i>
+
+    <pre>
+    Quick start: double click on testinf.xul.
+    
+    The directory rdftest contains as most important new features compared with rdfinf:
+    1) the Notation 3 parser N3EParser.js
+    2) a forward reasoner Forward.js. The forward reasoner was developed in order to be
+       able to implement log:Conclusion. 
+    
+    The main screen of the application is testinf.xul.
+    The screen has following functionalities:
+    Under the label "Messages" appear messages from the program: 
+    parser errors and messages from the inference engine.
+    Under the label "Testcases" a testcase can be selected.
+    The name of the testcase is selected by the first choicebox.
+    The next three buttons (execute testcase, forward only and backward only) 
+    determine the choice of inference engine:
+    execute testcase:  executes first with the backward reasoner and
+    then with the forward reasoner; execution times can be compared
+    when the verbose flag is off.
+    forward only: the forward reasoner is used
+    backward only: the backward reasoner is used.
+    The next choicebox permits to toggle the verbose flag:
+    if the flag is set, information about the inferencing process is 
+    written in the output screen; otherwise only the results are shown.
+    
+    The next button ("load file to test")permits to make your own testcase:
+    each time the button is pushed a file can be selected.
+    The filename is put into a buffer.
+    When a certain number of files has been entered of which the last file is the queryfile,
+    then a query can be executed by one of the executing buttons above
+    (execute testcase, forward only, backward only).
+    When the buffer is flushed with the button "flush buffer" the selected testcase 
+    in the first choicebox will be active again.
+    Finally, the last button "clear textarea" permits to clear the textarea.
+    
+    See also: references RDFEngine at the bottom of the page.
+    
+    Modules - screens:
+    
+    testinf.xul: the main (and only) program screen.
+    N3EParser.js: the Notation 3 Parser
+    Jsengine.js: the finite state machine for the backward reasoner
+    RDFEngine.js: the backward reasoning engine
+    Forward.js: finite state machine and forward reasoner
+    RDFUnify.js: substitution and unification functions
+    interface.js: the functions that define the interface 'interface.txt'.
+    builtins.js: module for builtins (not yet used)
+    Utils.js: utility functions for parsing.
+    </pre>
+     References:<br>
+
+<A HREF="http://www.w3.org/2001/sw/
+"> SemanticWeb Initiative </A><br>
+<A HREF="http://www.w3.org/RDF/">RDF - Resource Description Framework</A><br>
+<A HREF="http://www.w3schools.com/rdf/default.asp">RDF Tutorial</A>
+<A HREF="http://www.w3schools.com/rdf/rdf_schema.asp">RDF Schema</A><br>
+<A HREF="http://www.w3schools.com/rdf/rdf_owl.asp">OWL - Ontology Web Language</A><br>
+<A HREF="http://www.w3.org/2000/10/swap/Primer"
+>Notation 3</A><br>
+<A HREF="http://www.agfa.com/w3c/euler/">Euler</A>: inferencing with Java and C#<br>
+<A HREF="http://www.w3.org/2000/10/swap/doc/">CWM</A>: inferencing with Python<br>
+
+<A HREF="http://eulersharp.sourceforge.net/2004/02swap/RDFEngine/RDFEngine.html">
+RDFEngine</A>: inferencing with Python<br>
+<A HREF="http://sourceforge.net/projects/simply-rdf/">
+SimplyRDF</A>RDF API and inferencing with Java<br>
+<A HREF="http://eulersharp.sourceforge.net/2004/02swap/OWLLogic/owllogic.html">
+OWLLogic</A>: OWL Reasoner<br>
+<A HREF="http://www.daml.org/2003/11/swrl/">SWRL</A>:Semantic web rule language<br>
+<A HREF="http://www.ninebynine.org/RDFNotes/Swish/Intro.html 
+">SWISH</A>: inferencing with Haskell <br>
+
+   </body>
+</html>

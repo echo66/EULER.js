@@ -1,0 +1,913 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/css" href="chrome://global/skin"?>
+<!DOCTYPE xul:window [
+	<!ENTITY rdf 'http://www.w3.org/1999/02/22-rdf-syntax-ns#'>
+	<!ENTITY sample  "http://www.sampleurl.org/rdfs/sample#">
+]>
+<xul:window  onload="init()" onclose="exitDinf()"
+	xmlns = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+	xmlns:xul    = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+	xmlns:sample = "&sample;"
+    xmlns:html="http://www.w3.org/1999/xhtml"
+	xmlns:rdf    = "&rdf;">
+        <xul:script language="javascript1.7" src="interface.js"/>
+        <xul:script language="javascript1.7" src="XULInterface.js"/>
+        <xul:script language="javascript1.7" src="var.js"/>
+        <xul:script language="javascript1.7" src="RDFUnify.js"/>
+        <xul:script language="javascript1.7" src="RDFEngine.js"/>
+        <xul:script language="javascript1.7" src="Jsengine.js"/>
+        <xul:script language="javascript1.7" src="gedcom-simple.js"/>
+        <xul:script language="javascript1.7" src="Utils.js"/>
+        <xul:script language="javascript1.7" src="Builtins.js"/>
+        <xul:script language="javascript1.7" src="Forward.js"/>
+        <xul:script language="javascript1.7" src="ForwardCS.js"/>
+        <xul:script language="javascript1.7" src="N3EParser.js"/>
+        <xul:script language="javascript1.7" src="Parameter.js"/>
+        <xul:script language="javascript1.7" src="MRUArray.js"/>
+        <xul:script language="javascript1.7" src="Demo.js"/>
+        <xul:script language="javascript1.7" src="WSDemo.js"/>
+
+        <xul:script language="javascript1.7" src="WebService.js"/>
+        <xul:script language="javascript1.7" src="WebServiceH.js"/>
+        <xul:script language="javascript1.7" src="client/WSclientO.js"/>
+        <xul:script language="javascript1.7" src="WebServiceCS.js"/>
+        <xul:script language="javascript1.7" src="server/WSserverCS.js"/>
+        <xul:script language="javascript1.7" src="server/ThreadManager.js"/>
+
+        <xul:script language="javascript1.7">
+
+		<![CDATA[
+/** Main GUI for module RDFTest
+  * Author: Guido J.M. Naudts Bouwel
+  */
+
+var application = window;
+// This var is a referrer to window object where scripts are loaded.
+// It offers an easy way to access the api wherever you are,
+// iframe or a child window. In case you need an iframe, this code
+// needs to be added to the xul in the iframe:
+//       var application = parent.application
+// In case you need a window, this code needs to be added:
+//  var application = opener.application
+
+// a buffer for own testcases
+var fileBuffer = [];
+var filepath = "";
+var queriesBuffer = new HashTable();
+
+// a global prefix dictionary who collects all prefixes
+// of an application
+
+
+var inferenceType = "forward";
+
+// application name
+var appName = "";
+// application file
+var appFileName = "";
+// query file
+var queryFileName = "";
+// axiom file
+var axiomFileName = "";
+
+// name of web service
+var webServiceName;
+
+// address of web service
+var webServiceAddress;
+
+var verbose = false;
+
+var mru;
+
+var mruLength = 10;
+
+var tempWin;
+
+var WSPort = 10000;
+
+var limit = -1;
+
+var dnotActive = true;
+
+var matchingMechanism = "M";
+
+var wsServerCS;
+
+var queryWindow;
+
+
+function startDemo(){
+
+}
+
+function init(){
+    // must initialize and read the mru
+    mru = new MRUArray(mruLength,["authen"]);
+    //writeMessage("base path: " + getBasePath());
+
+    // check the existence of the file
+    var exists = checkFileExistence(getBasePath() +  "mru.n3");
+
+    if (exists){
+        readMRU(getBasePath() +  "mru.n3");
+        //writeMessage("base path: " + getBasePath());
+        writeMessage("The 'most recent apps' list has been loaded.\n");
+    }
+
+    updateMRUList(false);
+    startServer();
+    writeMessage("The web service server has been started.\n");
+}
+
+
+function exitDinf(){
+    netscape.security.PrivilegeManager.enablePrivilege("UniversalXPConnect");
+    var ps = Components.classes["@mozilla.org/embedcomp/prompt-service;1"]
+         .getService(Components.interfaces.nsIPromptService);
+    var rv = ps.confirmEx(window, "Exit DINF", "Do you want to save the application?",
+                          ps.BUTTON_TITLE_IS_STRING * ps.BUTTON_POS_0 +
+                          ps.BUTTON_TITLE_IS_STRING * ps.BUTTON_POS_1,
+                          "Yes", "No", null, null, {});
+    // rv = 0 if "Yes"; rv = 1 if "No"
+    //writeln("DINF.exitDinf rv = " + rv);
+    writeMessage("Exiting!!");
+    if ( rv == 0){
+        saveApp();
+    }
+    stopServer();
+    window.close();
+}
+
+
+function loadN3( n3File ){
+     document.getElementById("sourceText").value = readAFileF(n3File);
+}
+
+function quickStartWizard(){
+    window.open('QuickStartWizard.xul','QS','chrome');
+}
+
+
+/** Save the application in a parameter file
+  * If appName == "" get a filechooser
+  * save applicationName in .app file, axiomfile = .axiom, queryFile = .query
+  * save parameters  in .app file.
+  * save mostRecently list in file mru.n3
+  */
+
+function saveAppAs(){
+   var save = appName;
+   appName = "";
+   saveApp();
+   if (appName == "")
+       appName = save;
+}
+
+/**
+  * Deletes only the entry in the application list.
+  * Not the application itself!!!
+  */
+function deleteApp(){
+        var app = document.getElementById("apps").selectedItem.label;
+        mru.deleteElement(app);
+        updateMRUList(true);
+}
+
+/**
+  * read the selected app from the mru menulist and open it
+  */
+function execApp(){
+        var app = document.getElementById("apps").selectedItem.label;
+        writeMessage("Opening application: " + app + "\n");
+        appFileName = getBasePath() + "testcases\\" + app + ".app";
+        var params = new Parameter();
+        params.readParameterFile2(appFileName);
+        axiomFileName = params.getParameter("axiomFile");
+        // restore the file
+        loadN3(axiomFileName);
+        writeMessage("The axiom file " + axiomFileName + " has been restored.\n");
+        queryFileName = params.getParameter("queryFile");
+        writeMessage("The query file " + queryFileName + " has been restored.\n");
+        // restore the queries
+        restoreQueries(queryFileName);
+        // update the mru
+        mru.getElement(app);
+        updateMRUList(true);
+}
+
+/**
+ * read an application parameter file and restore the application
+ */
+function openApp(){
+        globalPrefixes = [];
+        var appFile = fileChooser(getBasePath() + "testCases",".app", "*.app", 0 );
+        appFileName = appFile.toString();
+        //writeln("appFileName = " + appFileName);
+        var i = appFileName.lastIndexOf("\\");
+        var i1 = appFileName.lastIndexOf(".");
+        appName = appFileName.substring(i+1, i1);
+        var params = new Parameter();
+        params.readParameterFile2(appFileName);
+        //writeln("openApp appFileName: " + appFileName);
+        //writeln("openApp params: " + params.getAll());
+        axiomFileName = params.getParameter("axiomFile");
+        // restore the file
+        //writeln("openApp axiomFileName: " + axiomFileName);
+        loadN3(axiomFileName);
+        writeMessage("The axiom file " + axiomFileName + " has been restored.\n");
+        queryFileName = params.getParameter("queryFile");
+        writeMessage("The query file " + queryFileName + " has been restored.\n");
+        // restore the queries
+        restoreQueries(queryFileName);
+        // update the mru
+        mru.getElement(appName);
+        updateMRUList(true);
+        //writeln("DINF.openApp mru list = "  + mru.mruArray);
+
+
+}
+
+
+function saveApp(){
+    var appFile;
+    if ( appName == ""){
+        // getBasePath() returns a final slash!!
+        appFile = fileChooser(getBasePath() + "testCases",".app", "*.app", 1 );
+        appFileName = appFile.toString();
+
+        var i = appFileName.lastIndexOf("\\");
+        var i1 = appFileName.lastIndexOf(".");
+        appName = appFileName.substring(i+1, i1);
+
+    }else{
+        appFileName = getBasePath() + "params\\" + appName + ".app";
+    }
+    var params = new Parameter();
+    params.addParameter("applicationName", appName );
+    params.addParameter("applicationFile", appFileName);
+    //if (axiomFileName == ""){
+        axiomFileName =  getBasePath() + "testCases\\" +  appName + ".axiom.n3";
+        params.addParameter("axiomFile", axiomFileName);
+    //}else{
+    //    params.addParameter("axiomFile", axiomFileName);
+    //}
+    //if (queryFileName == ""){
+        queryFileName = getBasePath() + "testCases\\" + appName + ".query";
+        params.addParameter("queryFile", queryFileName);
+    //}else{
+    //    params.addParameter("queryFile", queryFileName);
+    //}
+
+    // got to save the inferencing parameters
+    addParameters(params);
+    params.saveParameterFileP(appFileName);
+    writeMessage("Parameter file saved: " + appFileName + "\n");
+    // save the axiom file
+    saveAxiomFile();
+    writeMessage("Axiom file saved: " + axiomFileName + "\n");
+    // save the query file
+    saveQueryFile();
+    writeMessage("Query file saved: " + queryFileName + "\n");
+    // save mru
+    mru.getElement(appName);
+    updateMRUList(true);
+
+    //writeln("DINF.saveApp mru list = "  + mru.mruArray);
+
+
+    writeMessage("Application saved: " + appName + "\n");
+}
+
+function saveQueryFile(){
+    var params = new Parameter();
+    for( queryName in queriesBuffer.dict){
+        params.addParameter(queryName, queriesBuffer.get(queryName));
+    }
+    if ( queryFileName == ""){
+        var queryFile = fileChooser(getBasePath() + "testCases","Query files", "*.query" , 1);
+        queryFileName = queryFile.toString();
+
+    }
+    params.saveParameterFileP(queryFileName);
+    writeMessage("Query file " + queryFileName + " saved.\n");
+}
+
+
+function restoreQueryFile(){
+    var queryFile = fileChooser(getBasePath() + "testCases","Query files", "*.query" , 0);
+    //writeln("queryFile:: " + queryFile + "\n");
+    queryFileName = queryFile.toString();
+
+    restoreQueries(queryFileName);
+    writeMessage("Query file: " + queryFileName + " has been restored.\n");
+}
+
+function restoreQueries(queryFileName){
+    var params = new Parameter();
+    params.readParameterFile2(queryFileName);
+    var entries = params.getAll();
+    queriesBuffer.dict = [];;
+    application.document.getElementById("queries").removeAllItems();
+
+    for ( key in entries){
+         queriesBuffer.add(key, entries[key]);
+         application.document.getElementById("queries").selectedItem =
+           application.document.getElementById("queries").appendItem(key);
+
+    }
+
+}
+
+function saveAxiomFile(){
+    var content = document.getElementById("sourceText").value;
+    saveAFile(axiomFileName, content);
+}
+
+
+function readMRU(fileName){
+     mru.restoreArray(getBasePath() + "mru.n3");
+     //writeMessage("DINF.readMRU mru read : " + mru.mruArray + "\n");
+     updateMRUList(false);
+
+}
+
+function updateMRUList(saveYes){
+     var li = document.getElementById("apps");
+     li.removeAllItems();
+     for (var i = mru.mruArray.length -1; i > -1; i--){
+           if (mru.mruArray[i] != undefined && mru.mruArray[i] != ""){
+               application.document.getElementById("apps").appendItem(mru.mruArray[i]);
+           }
+     }
+     li.selectedItem = li.getItemAtIndex(0);
+     if (saveYes){
+         mru.saveArray(getBasePath() + "mru.n3");
+     }
+     writeMessage("A reset of the application list has been done.\n");
+}
+
+
+
+function addParameters(params){
+
+
+}
+
+
+function executeQuery(){
+    // get the query
+    var query = document.getElementById("querySource").value;
+    var source = document.getElementById("sourceText").value;
+    var xulint = new XULInterface();
+    xulint.verbose = verbose;
+    xulint.limit = limit;
+    xulint.matchingMechanism = this.matchingMechanism;
+    xulint.addSetByString("axiom", "a", source);
+    xulint.addSetByString("query", "q", query);
+    xulint.makeInfDB("DINFDB",["axiom"]);
+    var sols = xulint.queryInfDB("DINFDB", "query", inferenceType);
+    writeResult("Solutions are:\n\n");
+    /*for (prefix in globalPrefixes){
+        writeln("prefixF: " + prefix + " prefix: " + globalPrefixes[prefix]);
+    }*/
+    for (var i = 0; i < sols.length; i++){
+        writeResult(triplesetPrettyOut(sols[i]) + "\n");
+
+    }
+    writeln("\n");
+
+}
+
+function transferQuery(){
+
+    var queryName = document.getElementById("queries").selectedItem.label;
+    document.getElementById("querySource").value = queriesBuffer.get(queryName);
+
+}
+
+function addQuery(){
+    window.open("./QueryNameEntry.xul","query name entry", "chrome, width=600,height=300");
+}
+
+function renameQuery(){
+    var queryName =  document.getElementById("queries").selectedItem.label;
+    netscape.security.PrivilegeManager.enablePrivilege("UniversalXPConnect");
+    window.openDialog("./ChangeQueryName.xul","change query name", "chrome, width=600,height=300", queryName);
+}
+
+/*
+ * delete the current query in the menulist
+ */
+function deleteQuery(){
+    queriesBuffer.remove(document.getElementById("queries").selectedItem.label);
+
+    document.getElementById("queries").removeAllItems();
+    for (key in queriesBuffer.dict){
+        if(queriesBuffer.get(key) != undefined){
+            document.getElementById("queries").appendItem(key, queriesBuffer.get(key));
+        }
+    }
+}
+
+function showQueries(){
+    var s = "Query name        query value\n=====================================================\n";
+    var dict = queriesBuffer.dict;
+
+    var bl;
+    for( name in dict ){
+        writeMessage("query = " + queriesBuffer.get(name) + "\n");
+        if (queriesBuffer.get(name) != undefined){
+            bl = "";
+            for (var i = 0; i < 20 - name.length; i++){
+                bl = bl + " ";
+            }
+            s = s + "  " + name + bl + queriesBuffer.get(name) + "\n";
+        }
+    }
+    netscape.security.PrivilegeManager.enablePrivilege("UniversalXPConnect");
+    window.openDialog("./DisplayText.xul","Text display","chrome, width=800,height=300",
+        s);
+}
+
+function writeResult(s){
+     document.getElementById("resultsText").value += s;
+}
+
+function writeMessage(s){
+     document.getElementById("messages").value += s;
+}
+
+function toggleVerbose(inf){
+    if ( verbose )
+       inf.verbose = 1;
+    else
+       inf.verbose = 0;
+}
+
+
+function clearTextarea(){
+   document.getElementById("resultsText").value = "";
+}
+
+function test(){
+// function for testing things
+
+//objectsToRDF(ts);
+//testParser();
+//testParseAnonSet();
+//testParseTriple();
+//testParseTripleSet();
+//testParseNodeList();
+//testParseComment();
+//testParsePrefix();
+
+/*
+// example 1
+var triple1 = new triple("?a", "b", "?c");
+var triple2 = new triple("?c", "b", "?a");
+var triple3 = new triple("d", "b", "e");
+var triple4 = new triple("e", "b", "d"); // query
+var rule1 = new rule([triple1], [triple2]);
+var ds = [new db([rule1, triple3]),new db([triple4])];
+// example 2
+var triple5 = new triple("a", "b", "c");
+var triple6 = new triple("c", "b", "d");
+var triple7 = new triple("d", "b", "e");
+var triple8 = new triple("e", "b", "a");
+var triple10 = new triple("?a", "b", "?c");
+var triple11 = new triple("?c", "b", "?d");
+var triple12 = new triple("?a", "b", "?d");
+var rule2 = new rule([triple10, triple11], [triple12]);
+var triple9 = new triple("?x", "b", "?y"); // looping query
+var ds1 = [new db([triple5, triple6, triple7, triple8, rule2])
+                ,new db([triple9])];
+// var inf = new infData(ds1);
+//var inf = new infData(ds2);
+//var inf = new infData(ds3);
+var inf = new infData(ds);
+inf.initinf();
+//printMessage("Graphs: " + inf.graphsToString());
+//printMessage("query " + inf.query + "\n");
+//inference(inf);
+//reason(inf);*/
+}
+
+function setReasoner(reasonerType){
+    if (reasonerType == "backward"){
+       inferenceType = "backward";
+       writeMessage("The reasoner is of type backward.\n");
+    }else{
+       inferenceType = "forward";
+       writeMessage("The reasoner is of type forward.\n");
+    }
+}
+
+function openFile(){
+   //writeMessage("basePath= " + getBasePath());
+   var fileN = fileChooser(getBasePath() + "testcases", "N3 files", "*.n3", 0);
+   writeMessage("File opened: " + fileN + "\n");
+   document.getElementById("sourceText").value += readAFileF(fileN);
+
+}
+
+function saveFileAs(){
+    // get the filename
+    var fileN = fileChooser(getBasePath() + "testcases", "N3 files", "*.n3", 1);
+    axiomFileName = fileN.toString();
+    saveAxiomFile();
+    writeMessage("The source code was saved to the file: " + axiomFileName + "\n");
+
+}
+
+function saveFile(){
+    // get the filename
+    if ( axiomFileName == undefined || axiomFileName == ""){
+         var fileN = fileChooser(getBasePath() + "testcases", "N3 files", "*.n3", 1);
+         axiomFileName = fileN.toString();
+    }
+    saveAxiomFile();
+    writeMessage("The source code was saved to the file: " + axiomFileName + "\n");
+}
+
+function saveOutputFile(){
+    // get the contents of the output zone
+    var txt = document.getElementById("resultsText").value;
+    var fil = saveTextFile(txt);
+    writeMessage("The output was saved to the file: " + fil + "\n");
+}
+
+function saveMessageFile(){
+    // get the contents of the mssage zone
+    var txt = document.getElementById("messages").value;
+    var fil = saveTextFile(txt);
+    writeMessage("The messages were save to the file: " + fil + "\n");
+}
+
+function clearOutput(){
+    document.getElementById("resultsText").value = "";
+}
+
+function clearSource(){
+    document.getElementById("sourceText").value = "";
+}
+
+function clearMessages(){
+    document.getElementById("messages").value = "";
+}
+
+function clearQuery(){
+    document.getElementById("querySource").value = "";
+}
+
+function printSource(){
+    var txt = document.getElementById("sourceText").value;
+    printText(txt);
+    writeMessage("About to print the source code.\n");
+}
+
+function printOutput(){
+    var txt = document.getElementById("resultsText").value;
+    printText(txt);
+    writeMessage("About to print the output zone.\n");
+}
+
+function printMessages(){
+    var txt = document.getElementById("messages").value;
+    printText(txt);
+    writeMessage("About to print the messages.\n");
+}
+
+
+function printText(txt){
+    netscape.security.PrivilegeManager.enablePrivilege("UniversalXPConnect");
+    tempWin = window.open("./PrintText.html", "myWin","width=800, height=300");
+    tempWin.document.write("<pre>" + txt + "</pre>");
+    tempWin.print();
+    tempWin.close();
+}
+
+function controls(){
+    window.open("./controls.xul","DINF controls", "chrome, width=600,height=300");
+}
+/**
+  * Start the web service server
+  */
+function startServer(){
+    wsServerCS = new WSserverCS();
+    wsServerCS.port = WSPort;
+    wsServerCS.start();
+    writeMessage("SERVER STARTED!\n");
+}
+
+function stopServer(){
+    wsServerCS.stop();
+    writeMessage("SERVER STOPPED!\n");
+}
+
+function saveWS(){
+    var i = this.axiomFileName.lastIndexOf("\\");
+    var defaultName = this.axiomFileName.substring(i+1);
+    netscape.security.PrivilegeManager.enablePrivilege("UniversalXPConnect");
+    window.openDialog("./TextEntry.xul","", "chrome,width=600,height=300",
+        "Please, enter a name for the Web Service:", defaultName, "application.callWS" );
+
+}
+
+/**
+  * To create the webservice
+  * to use it WSserverCS.js must be strated
+  */
+function callWS( wsName ){
+    //  must now save the contents of the source zone in wsApps
+    var wsName = getBasePath() + "wsApps\\" + wsName;
+    saveAFile(wsName, document.getElementById("sourceText").value);
+    writeMessage("A Web Service was created with name: " + wsName + ".\n");
+}
+
+/**
+  * First we need to know the name of the webservice: ipaddress or dns name, port number
+  * (default 10000), and web service name eg "authen"
+  * For a query: the current query in the query zone can be used or the user can enter a
+  * new query.
+  * Eventually parameters can be given.
+  * Then the message is send with WSclientO.js
+  */
+function queryWS(){
+    netscape.security.PrivilegeManager.enablePrivilege("UniversalXPConnect");
+    // get the name of the webservice
+    window.openDialog("./TextEntry.xul","business", "chrome,width=600,height=300",
+        "Please, enter the name of the Web Service:", "", "application.getWSName" );
+
+
+}
+
+function handleQuery(query){
+    // first close the last window
+    queryWindow.close();
+    // we got all info, we can make the query
+    var wsAddress = webServiceAddress;
+    var i =  wsAddress.indexOf(":");
+    var port = WSPort;
+    var address;
+    if ( i > 0 ){
+       port = wsAddress.substring(i+1);
+       address = wsAddress.substring(0,i);
+    }else{
+       address = wsAddress;
+    }
+    var wsClient = new WSclientO;
+    if(webServiceName == undefined || webServiceName == ""){
+        webServiceName = "business";
+    }
+    //writeMessage("name " + webServiceName + " query " + query + "\n address : " + address + " port: " + port + "\n");
+    wsClient.query(webServiceName, query, address, port);
+    var result = wsClient.recieved;
+    writeResult("Solutions:\n" + getSolsFromSoap(result) + "\n");
+}
+
+function getWSName(wsName){
+     webServiceName = wsName;
+    // get the address of the webservice
+    netscape.security.PrivilegeManager.enablePrivilege("UniversalXPConnect");
+    window.openDialog("./TextEntry.xul","", "chrome,width=600,height=300",
+        "Please, enter the address of the Web Service:\n" +
+           "Format:xxx.xxx.xxx.xxx:portnr of dns_name:portnr\n" +
+           "(Port number is optional)\n" +
+           "or choose the default.", "localhost:" + WSPort,
+            "application.getWSAddress" );
+
+}
+
+function getWSAddress(wsAddress){
+    webServiceAddress = wsAddress;
+    var defaultQuery = document.getElementById("querySource").value;
+    netscape.security.PrivilegeManager.enablePrivilege("UniversalXPConnect");
+    queryWindow = window.openDialog("./TextEntry.xul","", "chrome,width=600,height=300",
+        "Please, enter a query or choose the default if there is any:", defaultQuery, "application.handleQuery" );
+
+}
+
+/**
+  * Show a flow chart of how to make an application.
+  */
+function appFlowChart(){
+     netscape.security.PrivilegeManager.enablePrivilege("UniversalXPConnect");
+     if (document.location == "chrome://dinf/content/DINF.xul"){
+         //print(" path: " + "file:///" + getBasePath() + "application.jpg");
+         window.open("chrome://dinf/content/application.jpg", "help", "chrome,width=1000,height=600");
+     } else{
+         window.open("./application.jpg");
+     }
+
+}
+
+function displayHelp(){
+     netscape.security.PrivilegeManager.enablePrivilege("UniversalXPConnect");
+     if (document.location == "chrome://dinf/content/DINF.xul"){
+         //print(" path: " + "file:///" + getBasePath() + "DINFExplic.html");
+         window.open("chrome://dinf/content/DINFExplic.html", "help", "chrome,width=1000,height=600");
+     } else{
+         window.open("./DINFExplic.html");
+     }
+}
+
+function displayWSText(){
+     netscape.security.PrivilegeManager.enablePrivilege("UniversalXPConnect");
+     if (document.location == "chrome://dinf/content/DINF.xul"){
+         //print(" path: " + "file:///" + getBasePath() + "DINFGen.html");
+         window.open("chrome://dinf/content/DINFGen.html", "help", "chrome,width=1000,height=600");
+     } else{
+         window.open("./DINFGen.html");
+     }
+}
+
+function viewWSDL(){
+     netscape.security.PrivilegeManager.enablePrivilege("UniversalXPConnect");
+     if (document.location == "chrome://dinf/content/DINF.xul"){
+         //print(" path: " + "file:///" + getBasePath() + "WSDL.txt");
+         window.open("chrome://dinf/content/WSDL.txt", "WSDL", "chrome,width=1000,height=600");
+     } else{
+         window.open("./WSDL.xml");
+     }
+
+}
+
+function displayAbout(){
+     netscape.security.PrivilegeManager.enablePrivilege("UniversalXPConnect");
+     if (document.location == "chrome://dinf/content/DINF.xul"){
+         //print(" path: " + "file:///" + getBasePath() + "About.html");
+         window.openDialog("chrome://dinf/content/About.html", "About", "chrome,width=300,height=150");
+     } else{
+         window.openDialog("./About.html","", "width=300,height=150");
+     }
+
+}
+
+function setPorts(){
+    netscape.security.PrivilegeManager.enablePrivilege("UniversalXPConnect");
+    queryWindow = window.openDialog("./TextEntry.xul","", "chrome,width=600,height=300",
+        "Please, enter a port number or choose the default:\n" +
+        "Please stop and restart the server afterwards.", WSPort, "application.handlePort" );
+}
+
+function handlePort(port){
+   WSPort = port;
+}
+
+
+		]]>
+    </xul:script>
+
+    <keyset>
+        <key key="c" modifiers="shift any control" oncommand="controls()"/>
+    </keyset>
+
+    <xul:vbox flex="1">
+        <menubar id="DINF-menubar" >
+            <menu id="apps-menu" label="Apps" style="font-weight:bold;color:#404020;">
+              <menupopup id="apps-popup">
+                <!--<menuitem label="New App" />-->
+                <menuitem label="Open App" oncommand="openApp()"/>
+                <menuitem label="Save App" oncommand="saveApp()"/>
+                <menuitem label="Save App As" oncommand="saveAppAs()"/>
+                <menuseparator/>
+                <menuitem label="Exit" oncommand="exitDinf()"/>
+              </menupopup>
+            </menu>
+            <menu id="wizard-menu" label="Wizards" style="font-weight:bold;color:#404020;">
+              <menupopup id="wizard-popup">
+                <menuitem label="Demo" oncommand="startDemoDinf()"/>
+                <menuitem label="QuickStartWizard" oncommand="quickStartWizard()"/>
+                <menuitem label="Web Services Demo" oncommand="startWSDemo()"/>
+                <menuitem label="Application Flow Chart" oncommand="appFlowChart()"/>   
+              </menupopup>
+            </menu>
+            <menu id="WS-menu" label="Web Services" style="font-weight:bold;color:#404020;">
+              <menupopup id="WS-popup">
+                <menuitem label="Start Server" oncommand="startServer()"/>
+                <menuitem label="Stop Server" oncommand="stopServer()"/>
+                <menuitem label="Save Web Service" oncommand="saveWS()"/>
+                <menuitem label="Query Web Service" oncommand="queryWS()"/>
+                <menuitem label="Set Port" oncommand="setPorts()"/>
+                <menuitem label="View WSDL" oncommand="viewWSDL()"/>
+              </menupopup>
+            </menu>
+
+
+
+          <menu id="file-menu" label="Source Code" style="font-weight:bold;color:#404020;">
+            <menupopup id="file-popup">
+              <menuitem label="Open" oncommand="openFile()"/>
+              <menuitem label="Save" oncommand="saveFile()"/>
+              <menuitem label="Save As" oncommand="saveFileAs()"/>
+              <menuitem label="Save Queries" oncommand="saveQueryFile()"/>
+              <menuitem label="Save Output" oncommand="saveOutputFile()"/>
+              <menuitem label="Save Messages" oncommand="saveMessagesFile()"/>
+            </menupopup>
+          </menu>
+            <menu id="print-menu" label="Print" style="font-weight:bold;color:#404020;">
+              <menupopup id="print-popup">
+                <menuitem label="Print source" oncommand="printSource()"/>
+                <menuitem label="Print output" oncommand="printOutput()"/>
+                <menuitem label="Print messages" oncommand="printMessages()"/>
+              </menupopup>
+            </menu>
+            <menu id="clear-menu" label="Clear" style="font-weight:bold;color:#404020;">
+              <menupopup id="clear-popup">
+                <menuitem label="Clear output" oncommand="clearOutput()"/>
+                <menuitem label="Clear source" oncommand="clearSource()"/>
+                <menuitem label="Clear messages" oncommand="clearMessages()"/>
+                <menuitem label="Clear query" oncommand="clearQuery()"/>
+              </menupopup>
+            </menu>
+            <menu id="reasoner-menu" label="Reasoners" style="font-weight:bold;color:#404020;">
+              <menupopup id="reasoner-popup">
+                <menuitem label="Forward reasoner" oncommand="setReasoner('forward')"/>
+                <menuitem label="Backward reasoner" oncommand="setReasoner('backward')"/>
+              </menupopup>
+            </menu>
+
+          <menu id="help-menu" label="Help" style="font-weight:bold;color:#404020;">
+            <menupopup id="help-popup">
+              <menuitem label="Content" oncommand="displayHelp()"/>
+              <menuitem label="Web services" oncommand="displayWSText()"/>
+              <menuitem label="About" oncommand="displayAbout()"/>
+            </menupopup>
+          </menu>
+        </menubar>
+
+        <xul:hbox flex="1">
+
+            <xul:groupbox flex="1">
+                <xul:caption label="Mozilla inference engine"/>
+                <xul:grid flex="1">
+                    <xul:columns>
+                        <xul:column flex="1"/>
+                        <xul:column flex="1"/>
+                        <xul:column flex="1"/>
+                    </xul:columns>
+                    <xul:rows>
+                        <xul:row>
+                            <xul:label value="Most recent apps" style="font-weight:bold;color:#0066CC;"/>
+                            <xul:label value="Source code" style="font-weight:bold;color:#0066CC;" />
+                            <xul:label value="QUERIES" style="font-weight:bold;color:#0066CC;" />
+                        </xul:row>
+                        <xul:row flex="1">
+                            <xul:vbox flex="1">
+                                <xul:menulist id="apps">
+                                    <xul:menupopup>
+                                        <xul:menuitem label="authen" selected='true'/>
+                                    </xul:menupopup>
+                                </xul:menulist>
+                                <separator/>
+                                <xul:button label="Load app" oncommand="execApp()"/>
+                                <xul:button label="Delete app" oncommand="deleteApp()"/>
+                                <separator/>
+                                <xul:label value="Output" style="font-weight:bold;color:#0066CC;" />
+                                <xul:textbox multiline="true" value="" id="resultsText" flex="1.0"/>
+                                <xul:button label="Clear output" oncommand="clearOutput()"/>
+                            </xul:vbox>
+                            <xul:vbox flex="1">
+                                <xul:textbox multiline="true" value="" id="sourceText" flex="1.5"/>
+                                <xul:label value="Messages" style="font-weight:bold;color:#0066CC;" />
+                                <xul:textbox multiline="true" value="" id="messages" flex="1.0"/>
+
+                            </xul:vbox>
+                            <xul:vbox maxwidth="400" flex="1.2">
+                                <xul:textbox multiline="true" value="" id="querySource" flex="1.5"/>
+                                <xul:hbox>
+                                    <xul:button label="Execute" oncommand="executeQuery()"/>
+                                    <xul:button label="Add query" oncommand="addQuery()"/>
+                                </xul:hbox>
+                                <separator/>
+                                <xul:label value="Query list" style="font-weight:bold;color:#0066CC;" />
+                                <xul:menulist id="queries" flex="1.0">
+                                    <xul:menupopup>
+                                    </xul:menupopup>
+                                </xul:menulist>
+                                <xul:vbox>
+                                    <xul:hbox>
+                                        <xul:button label="Select query" oncommand="transferQuery()"/>
+                                        <xul:button label="Delete query" oncommand="deleteQuery()"/>
+                                        <xul:button label="Rename query" oncommand="renameQuery()"/>
+                                        <!-- next button show all queries in a separate window -->
+                                        <xul:button label="Show queries" oncommand="showQueries()"/>
+                                    </xul:hbox>
+                                    <xul:hbox>
+                                        <xul:button label="Save" oncommand="saveQueryFile()"/>
+                                        <xul:button label="Restore" oncommand="restoreQueryFile()"/>
+                                    </xul:hbox>
+
+                                </xul:vbox>
+
+                            </xul:vbox >
+
+
+                        </xul:row>
+                    </xul:rows>
+                </xul:grid>
+            </xul:groupbox>
+        </xul:hbox>
+    </xul:vbox>
+</xul:window>

@@ -1,0 +1,59 @@
+Plan and possibilities for InfTest
+========================================
+
+1) illustrate everything with wizards/new interface
+
+1a) add builtins
+
+2) add conversion of text files to n3 to whatever ( in two steps ) with selection of parts
+
+2a) following formats: N3, RDF/XML, OWL should be converted to internal format
+ (interface.js) and back.
+
+2b) implements namespaces control
+
+3) establish association matrixes (experimental)
+
+4) make n3stylesheets
+
+5) implement remote inferencing
+
+5a) publish -subscribe paradigm
+
+5b) soa(services oriented architecture) - esb(enterprise service bus) using XML, N3, RDF/XML, OWL,
+HTTP, HTTPS, HTML and remote inferencing.
+
+5c) N3 over SOAP
+
+5d) description and implementation of web services in N3
+With a (set of) N3 file(s) a query can be exposed as a web service;
+the query is encapsulated in soap; WDSL describes the service.
+
+6) implement rdf parsing and rdf => n3
+
+7) implement javascript in n3 files; in rules; start, proc, finish procedures.
+
+8) make n3 objects and procedures
+
+9) n3 database interface
+
+10) automatic data entry screens 
+
+11) make description logic reasoner
+
+12) hide namespaces
+
+13) convert XML to N3 eg
+<tag1>
+   <tag2>
+      blabla
+   </tag2>
+</tag1>
+becomes
+"tag1" x:tag; x:content ""; x:child "tag2".
+"tag2" x:tag; x:content "blabla"; x:parent "tag1".
+ then rules can be applied to the XML/N3 source.
+ Application: convert SOAP to N3 and apply rules for interpreting and executing
+ SOAP messages.
+
+Author: Guido J.M. Naudts Bouwel

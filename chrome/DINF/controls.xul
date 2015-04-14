@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/css" href="chrome://global/skin"?>
+<!DOCTYPE xul:window [
+	<!ENTITY rdf 'http://www.w3.org/1999/02/22-rdf-syntax-ns#'>
+	<!ENTITY sample  "http://www.sampleurl.org/rdfs/sample#">
+]>
+<xul:window onload="displayValues()"
+    onclose="stop()"
+    title="Xul Client"
+    xmlns = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+	xmlns:xul    = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+	xmlns:sample = "&sample;"
+        xmlns:html="http://www.w3.org/1999/xhtml"
+	xmlns:rdf    = "&rdf;">
+
+
+
+    <xul:script language="javascript1.7">
+		<![CDATA[
+	/**
+      * Author: Guido J.M. Naudts Bouwel
+      */	   	
+	var application = opener.application;
+
+	function doTest(){
+	   // for testing features
+	   application.test();
+	}
+
+	function toggleVerbose(){
+	    if (application.verbose){
+	        application.verbose = false;
+	        writeLine("Value of verbose: false.");
+	    }else{
+	        application.verbose = true;
+	        writeLine("Value of verbose: true.");
+	    }
+    }
+
+	function toggleMatching(){
+	    if (application.matchingMechanism == "D"){
+	        application.matchingMechanism = "R";
+	        writeLine("Value of matching mechanism: R.");
+	    }else{
+	        application.matchingMechanism = "D";
+	        writeLine("Value of matching mechanism: D.");
+	    }
+    }
+
+	function toggleDNot(){
+	    if (application.dnotActive){
+	        application.dnotActive = false;
+	        writeLine("Value of dnotActive: false.");
+	    }else{
+	        application.dnotActive = true;
+	        writeLine("Value of dnotActive: true.");
+	    }
+    }
+
+    function writeLine(text){
+       document.getElementById('resultsText').value =
+           document.getElementById('resultsText').value + text + "\n";
+      application.writeMessage(text + "\n");
+
+    }
+
+    function writeLine1(text){
+       document.getElementById('resultsText').value =
+           document.getElementById('resultsText').value + text + "\n";
+    }
+
+    function displayValues(){
+        writeLine1("Value of verbose: " + application.verbose);
+        writeLine1("Value of dnotActive: " + application.dnotActive);
+        writeLine1("Value of matchingMechanism: " + application.matchingMechanism);
+    }
+
+    function setLimit(){
+         var lim = document.getElementById("limit").selectedItem.label;
+         if (lim == "no limit"){
+            application.limit = -1;
+         }
+         if (lim == 10){
+            application.limit = 10;
+         }
+         if (lim == 20){
+            application.limit = 20;
+         }
+         if (lim == 50){
+            application.limit = 50;
+         }
+         if (lim == 100){
+            application.limit = 100;
+         }
+         if (lim == 200){
+            application.limit = 200;
+         }
+         if (lim == 500){
+            application.limit = 500;
+         }
+         if (lim == 1000){
+            application.limit = 1000;
+         }
+         application.writeMessage("Limit set to: " + lim + "\n");
+
+    }
+
+
+]]>
+</xul:script>
+
+<vbox>
+  <hbox>
+      <button label="Toggle verbose" oncommand="toggleVerbose()"/>
+      <button label="Toggle matching mechanism" oncommand="toggleMatching()"/>
+      <button label="Toggle dnot" oncommand="toggleDNot()"/>
+      <button label="Test" oncommand="doTest()"/>
+  </hbox>
+    <xul:menulist id="limit" oncommand="setLimit()">
+        <xul:menupopup>
+            <xul:menuitem label="no limit"/>
+            <xul:menuitem label="10"/>
+            <xul:menuitem label="20"/>
+            <xul:menuitem label="50" selected='true'/>
+            <xul:menuitem label="100"/>
+            <xul:menuitem label="150"/>
+            <xul:menuitem label="200"/>
+            <xul:menuitem label="500"/>
+            <xul:menuitem label="1000"/>
+        </xul:menupopup>
+    </xul:menulist>
+    <xul:textbox multiline="true" value="" minHeight="500" id="resultsText" flex="1.2"/>
+
+</vbox>
+</xul:window>
+
